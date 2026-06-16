@@ -1,0 +1,10 @@
+{
+    "timings": {
+        "Tests\\Feature\\Controllers\\Web\\UserControllerTest": 15.416,
+        "Tests\\Feature\\ExampleTest": 0.1938,
+        "Tests\\Feature\\Services\\UserServiceTest": 10.0142,
+        "Tests\\Unit\\ExampleTest": 0.0113
+    },
+    "checksum": "c1ffb69144bfc2952003750d7b3cf60f",
+    "updated_at": "2026-04-19T08:27:44+00:00"
+}

@@ -1,5 +1,10 @@
 <?php
 
+use App\Console\Commands\EnsureDatabaseStateCommand;
+use App\Enums\RolesEnum;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 /*
@@ -13,8 +18,9 @@ use Tests\TestCase;
 |
 */
 
-pest()->extend(TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()
+    ->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -43,7 +49,23 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * @param  RolesEnums  $role  by default the user will act as super admin
+ */
+function createUserAs(?RolesEnum $role = null): User
 {
-    // ..
+    Artisan::call(EnsureDatabaseStateCommand::class);
+
+    $user = User::whereHas('roles', function ($q) {
+        $q->where('name', RolesEnum::SUPER_ADMIN->value);
+    })->first();
+
+    if ($role && $role !== RolesEnum::SUPER_ADMIN) {
+        $user = User::factory()->create();
+        $user->assignRole($role);
+    }
+
+    $user->email_verified_at = now();
+
+    return $user;
 }

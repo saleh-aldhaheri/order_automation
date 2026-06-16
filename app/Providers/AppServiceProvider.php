@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Services\SettingService;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Telescope\TelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if ($this->app->environment('local') && class_exists(TelescopeServiceProvider::class)) {
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
@@ -19,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('components.layout', function ($view): void {
+            $view->with('appSettings', app(SettingService::class)->getSettings());
+        });
     }
 }

@@ -5,7 +5,173 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Lumina tokens — --lumina-primary / --lumina-on-surface set on <html> from settings */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-headline: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary: var(--lumina-primary);
+    --color-primary-dim: color-mix(in srgb, var(--lumina-primary) 72%, #000);
+    --color-primary-fixed: color-mix(in srgb, var(--lumina-primary) 50%, #aab8ff);
+    --color-primary-container: color-mix(in srgb, var(--lumina-primary) 42%, #fff 58%);
+    --color-on-primary: #f2f1ff;
+    --color-on-primary-container: color-mix(in srgb, var(--lumina-primary) 25%, #030712 75%);
+
+    --color-background: #f5f6fa;
+    --color-surface: #f5f6fa;
+    --color-surface-bright: #f5f6fa;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #eff1f5;
+    --color-surface-container: #e6e8ed;
+    --color-surface-container-high: #e0e2e8;
+    --color-surface-container-highest: #dadde2;
+    --color-surface-variant: #dadde2;
+
+    --color-on-surface: var(--lumina-on-surface);
+    --color-on-surface-variant: #595c5f;
+    --color-inverse-surface: #0c0e11;
+    --color-inverse-on-surface: #9b9da1;
+
+    --color-outline: #75777a;
+    --color-outline-variant: #abadb1;
+
+    --color-secondary: #535b6e;
+    --color-secondary-container: #dae2f8;
+    --color-on-secondary: #eff2ff;
+
+    --color-tertiary: #006a33;
+    --color-tertiary-container: #85fea5;
+    --color-on-tertiary: #cdffd3;
+
+    --color-error: #b41340;
+    --color-error-container: #f74b6d;
+    --color-on-error: #ffefef;
+
+    --color-app-bg: var(--color-background);
+    --color-app-surface: var(--color-surface-container-lowest);
+    --color-app-ink: var(--color-on-surface);
+    --color-app-muted: var(--color-on-surface-variant);
+    --color-app-accent: var(--color-primary);
+    --color-app-border: var(--color-outline-variant);
+}
+
+:root {
+    --lumina-primary: #2b4adc;
+    --lumina-on-surface: #2c2f32;
+}
+
+html.dark {
+    --color-background: #0c0e11;
+    --color-surface: #12151a;
+    --color-surface-bright: #171a21;
+    --color-surface-container-lowest: #090b0e;
+    --color-surface-container-low: #14181f;
+    --color-surface-container: #1c2129;
+    --color-surface-container-high: #252b35;
+    --color-surface-container-highest: #2f3640;
+    --color-surface-variant: #2f3640;
+
+    --color-on-surface: #eceef2;
+    --color-on-surface-variant: #9aa0aa;
+    --color-inverse-on-surface: #2c2f32;
+
+    --color-outline: #6b7280;
+    --color-outline-variant: #3d444e;
+
+    --color-secondary-container: #2d3548;
+    --color-on-secondary: #e8ebff;
+
+    --color-tertiary-container: #1d4d2e;
+    --color-on-tertiary: #b8f5cb;
+
+    --color-on-primary-container: color-mix(in srgb, var(--lumina-primary) 65%, #fff 35%);
+
+    --color-app-bg: var(--color-background);
+    --color-app-surface: var(--color-surface-container-low);
+    --color-app-ink: var(--color-on-surface);
+    --color-app-muted: var(--color-on-surface-variant);
+    --color-app-accent: var(--color-primary);
+    --color-app-border: var(--color-outline-variant);
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+ * Native <dialog> + showModal(): UA uses inset:0 + margin:auto to center, but preflight
+ * zeroes margin. Left/right/top/bottom then conflict: dialog sticks to the top-left.
+ * Clear inset and center explicitly (must win over UA + Tailwind layers).
+ */
+dialog:modal {
+    position: fixed !important;
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: min(calc(100vh - 2rem), 100dvh) !important;
+    overflow: auto;
+}
+
+.material-symbols-outlined {
+    font-size: 1.25rem;
+    line-height: 1;
+    user-select: none;
+}
+
+body {
+    font-family: var(--font-sans);
+}
+
+.font-headline {
+    font-family: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.lumina-heading {
+    font-family: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+    color-scheme: light;
+}
+
+html.dark {
+    color-scheme: dark;
+}
+
+/*
+ * Sidebar + main column widths on lg+ are driven by html.lumina-sidebar-collapsed (set
+ * from localStorage before paint + kept in sync by Alpine) so full page loads don’t animate
+ * from “zero” padding/width. Mobile drawer still uses Tailwind translate on #app-sidebar.
+ */
+@media (min-width: 1024px) {
+    #app-sidebar {
+        width: 16rem;
+    }
+
+    html.lumina-sidebar-collapsed #app-sidebar {
+        width: 4rem !important;
+    }
+
+    /*
+     * Use margin (not padding) so the main column’s box does not extend under the fixed sidebar;
+     * padding-left made the whole bar+content area paint over the sidebar and broke stacking.
+     */
+    #lumina-main-column {
+        margin-left: 16rem;
+        width: calc(100% - 16rem);
+        max-width: none;
+    }
+
+    html.lumina-sidebar-collapsed #lumina-main-column {
+        margin-left: 4rem !important;
+        width: calc(100% - 4rem) !important;
+    }
 }

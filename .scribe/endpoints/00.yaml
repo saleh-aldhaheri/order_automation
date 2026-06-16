@@ -1,0 +1,126 @@
+name: Authentication
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/login
+    metadata:
+      custom: []
+      groupName: Authentication
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'External system login'
+      description: 'Exchange `client_id` and `client_secret` for a Sanctum Bearer token. Use the token on all other API routes.'
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      client_id:
+        custom: []
+        name: client_id
+        description: 'Your external system client identifier.'
+        required: true
+        example: acme-dashboard
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      client_secret:
+        custom: []
+        name: client_secret
+        description: 'Your client secret (plain text; compared to the hashed value stored for the system).'
+        required: true
+        example: your-secret-value
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      client_id: acme-dashboard
+      client_secret: your-secret-value
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "success": "Token Generated",
+            "data": {
+              "token": "1|abcdefghijklmnopqrstuvwxyz0123456789",
+              "token_type": "Bearer"
+            }
+          }
+        headers: []
+        description: success
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Invalid client credentials"
+          }
+        headers: []
+        description: invalid_credentials
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "System deactivated"
+          }
+        headers: []
+        description: deactivated
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/revoke
+    metadata:
+      custom: []
+      groupName: Authentication
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Revoke access tokens'
+      description: 'Invalidates all personal access tokens for the authenticated external system (current Bearer token’s owner).'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 204
+        content: ''
+        headers: []
+        description: success
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
