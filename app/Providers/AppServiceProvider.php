@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Services\SettingService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Telescope\TelescopeServiceProvider;
@@ -26,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('components.layout', function ($view): void {
             $view->with('appSettings', app(SettingService::class)->getSettings());
+        });
+
+        RateLimiter::for('provider-refresh', function () {
+            return Limit::perSecond(10);
         });
     }
 }

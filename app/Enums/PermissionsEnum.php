@@ -22,6 +22,10 @@ enum PermissionsEnum: string
     case PERMISSION_UPDATE = 'permission:update';
     case PERMISSION_DELETE = 'permission:delete';
 
+    case PROVIDER_VIEW = 'provider:view';
+    case PROVIDER_CONNECT = 'provider:connect';
+    case PROVIDER_REFRESH = 'provider:refresh';
+
     case SEND_INVITATION = 'send:invitation';
 
     case EXTERNAL_SYSTEM_VIEW = 'external_system:view';
@@ -34,6 +38,7 @@ enum PermissionsEnum: string
 
     public function middleware(): string
     {
-        return 'permission:'.$this->value;
+        return 'permission:' . $this->value;
     }
 }
+ 

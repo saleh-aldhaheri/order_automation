@@ -1,7 +1,9 @@
 <?php
 
 use App\Enums\PermissionsEnum;
+use App\Enums\ProvidersEnum;
 use App\Enums\RolesEnum;
+use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ExternalSystemController;
 use App\Http\Controllers\Web\PermissionController;
@@ -113,5 +115,21 @@ Route::middleware('auth')
                         ->middleware(PermissionsEnum::SETTINGS_UPDATE->middleware());
                 });
 
+            Route::prefix('provider/{type}')
+                ->as('provider.')
+                ->group(function () {
+
+                    Route::get('/redirect', [ProviderController::class,  'redirect'])
+                        ->middleware(PermissionsEnum::PROVIDER_CONNECT->middleware())
+                        ->name('redirect');
+
+                    Route::get('/callback', [ProviderController::class,  'callback'])
+                        ->name('callback');
+
+                    Route::get('/refresh/{provider}', [ProviderController::class,  'refresh'])
+                        ->middleware([PermissionsEnum::PROVIDER_REFRESH->middleware(), 'throttle:provider-refresh'])
+                        ->name('refresh');
+                })
+                ->whereIn('type', array_column(ProvidersEnum::cases(), 'value'));
         });
     });

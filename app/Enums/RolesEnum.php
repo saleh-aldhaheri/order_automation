@@ -26,6 +26,8 @@ enum RolesEnum: string
             PermissionsEnum::PERMISSION_UPDATE,
             PermissionsEnum::PERMISSION_DELETE,
             PermissionsEnum::SEND_INVITATION,
+            PermissionsEnum::PROVIDER_VIEW,
+            PermissionsEnum::PROVIDER_CONNECT
         ];
     }
 
@@ -36,6 +38,6 @@ enum RolesEnum: string
 
     public function middleware(): string
     {
-        return 'role:'.$this->value;
+        return 'role:' . $this->value;
     }
 }
