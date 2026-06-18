@@ -2,7 +2,7 @@
 
 namespace App\Integrations\Shopee\Requests;
 
-use App\Data\Shopee\RefreshTokenData;
+use App\Data\Integrations\Shopee\RefreshTokenData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;

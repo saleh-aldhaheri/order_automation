@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Data\Shopee;
+namespace App\Data\Integrations\Shopee;
 
 use RuntimeException;
 use Spatie\LaravelData\Data;

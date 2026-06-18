@@ -2,8 +2,7 @@
 
 namespace App\Integrations\Shopee\Requests;
 
-use App\Data\Shopee\GetTokenData;
-use InvalidArgumentException;
+use App\Data\Integrations\Shopee\GetTokenData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;

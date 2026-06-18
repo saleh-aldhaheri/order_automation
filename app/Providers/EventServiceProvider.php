@@ -2,16 +2,19 @@
 
 namespace App\Providers;
 
+use App\Events\Integrations\ShopeeWebhookEvent;
+use App\Listeners\ShopeeOrderStatusListener;
 use App\Models\User;
 use App\Observers\UserObserver;
-use Illuminate\Bus\Queueable;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
-    use Queueable;
-
-    public function __construct($app) {}
+    protected $listen = [
+        ShopeeWebhookEvent::class => [
+            ShopeeOrderStatusListener::class,
+        ],
+    ];
 
     public function boot(): void
     {

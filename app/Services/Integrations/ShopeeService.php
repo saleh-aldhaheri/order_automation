@@ -2,7 +2,8 @@
 
 namespace App\Services\Integrations;
 
-use App\Data\Shopee\GetTokenData;
+use App\Data\Integrations\Shopee\GetTokenData;
+use App\Data\Integrations\Shopee\OrderStatusPushData;
 use App\Enums\ProvidersEnum;
 use App\Jobs\Integrations\RefreshProviderTokenJob;
 use App\Integrations\Shopee\ShopeeConnector;
@@ -212,4 +213,13 @@ class ShopeeService implements ProviderContract
             ]
         );
     }
+
+    public function requestOrders() {}
+
+    public function processOrder() {}
+
+    public function unProcessOrder() {}
+
+    // order status event handling
+    public function handleOrderStatus(OrderStatusPushData $data) {}
 }

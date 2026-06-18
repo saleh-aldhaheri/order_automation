@@ -4,6 +4,7 @@ namespace App\Integrations\Shopee;
 
 use App\Enums\ProvidersEnum;
 use App\Integrations\Shopee\Resources\Authorization;
+use App\Integrations\Shopee\Resources\Order;
 use App\Models\Provider;
 use Exception;
 use Saloon\Http\Connector;
@@ -120,5 +121,10 @@ class ShopeeConnector extends Connector
     public function authorization(): Authorization
     {
         return new Authorization($this);
+    }
+
+    public function order(): Order
+    {
+        return new Order($this);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Integrations\Shopee\Resources;
 
-use App\Data\Shopee\GetTokenData;
-use App\Data\Shopee\RefreshTokenData;
+use App\Data\Integrations\Shopee\GetTokenData;
+use App\Data\Integrations\Shopee\RefreshTokenData;
 use App\Integrations\Shopee\Requests\GetToken;
 use App\Integrations\Shopee\Requests\RefreshToken;
 use App\Integrations\Shopee\Resource;
