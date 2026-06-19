@@ -14,14 +14,18 @@ class EnsureAdminSeeded
             return;
         }
 
-        $user = User::create([
-            'name' => 'super_admin',
-            'email' => 'salehaldhaheri09@gmail.com',
-            'password' => Hash::make('123Password'),
-            'email_verified_at' => now(),
-        ]);
+        // Seed without firing model events so the UserObserver doesn't send an
+        // invitation email for the system-seeded super admin.
+        User::withoutEvents(function () {
+            $user = User::create([
+                'name' => 'super_admin',
+                'email' => 'salehaldhaheri09@gmail.com',
+                'password' => Hash::make('123Password'),
+                'email_verified_at' => now(),
+            ]);
 
-        $user->assignRole(RolesEnum::SUPER_ADMIN);
+            $user->assignRole(RolesEnum::SUPER_ADMIN);
+        });
     }
 
     public function present()
