@@ -2,12 +2,12 @@
 
 namespace App\Services\Integrations\Contracts;
 
-use App\Models\Provider;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 
-interface ProviderContract
+interface ShopContract
 {
     public function constructAuthorizationUrl(): string;
     public function handleCallback(Request $request): array;
-    public function refreshToken(): Provider;
+    public function refreshToken(): Shop;
 }

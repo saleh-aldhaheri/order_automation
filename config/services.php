@@ -43,7 +43,7 @@ return [
     'shopee' => [
         'base_url' =>  env('SHOPEE_BASE_URL'),
         'auth_base_url' => env('SHOPEE_AUTH_BASE_URL'),
-        'redirect_url' => env('SHOPEE_REDIRECT_URL', 'http://127.0.0.1:8000/provider/shopee/callback'),
+        'redirect_url' => env('SHOPEE_REDIRECT_URL', 'http://127.0.0.1:8000/shop/shopee/callback'),
         'auth_type' => env('SHOPEE_AUTH_TYPE', 'seller'),
         'partner_id' => env('SHOPEE_PARTNER_ID'),
         'partner_key' => env('SHOPEE_PARTNER_KEY'),

@@ -4,29 +4,30 @@ namespace App\Services\Integrations;
 
 use App\Data\Integrations\Shopee\GetTokenData;
 use App\Data\Integrations\Shopee\OrderStatusPushData;
-use App\Enums\ProvidersEnum;
-use App\Jobs\Integrations\RefreshProviderTokenJob;
+use App\Enums\ShopsEnum;
+use App\Integrations\Shopee\Requests\GetOrderDetails;
+use App\Jobs\Integrations\RefreshShopTokenJob;
 use App\Integrations\Shopee\ShopeeConnector;
-use App\Models\Provider;
-use App\Services\Integrations\Contracts\ProviderContract;
+use App\Models\Shop;
+use App\Services\Integrations\Contracts\ShopContract;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
 
-class ShopeeService implements ProviderContract
+class ShopeeService implements ShopContract
 {
     private ShopeeConnector $connector;
 
-    private ?Provider $provider = null;
+    private ?Shop $shop = null;
 
     private function __construct(
         public readonly int $partnerId,
         public readonly string $partnerKey,
         public readonly string $baseUrl,
         protected ?string $accessToken = null,
-        public readonly ?string $providerId = null,
+        public readonly ?string $externalShopId = null,
         public ?string $refreshToken = null,
     ) {
         $this->connector = new ShopeeConnector(
@@ -34,40 +35,40 @@ class ShopeeService implements ProviderContract
             $this->partnerKey,
             $this->baseUrl,
             $this->accessToken,
-            $this->providerId,
+            $this->externalShopId,
             $this->refreshToken,
         );
     }
 
     /**
-     * Build a service. Pass a Provider (with tokens) for refresh/calls,
+     * Build a service. Pass a Shop (with tokens) for refresh/calls,
      * or none for the auth flow (authorization URL + callback).
      */
-    public static function make(?Provider $provider = null): self
+    public static function make(?Shop $shop = null): self
     {
-        if ($provider && ! self::canCreate($provider)) {
-            throw new Exception('Not a Shopee provider');
+        if ($shop && ! self::canCreate($shop)) {
+            throw new Exception('Not a Shopee shop');
         }
 
-        $config = $provider?->configuration;
+        $config = $shop?->configuration;
 
         $service = new self(
             partnerId: config('services.shopee.partner_id'),
             partnerKey: config('services.shopee.partner_key'),
             baseUrl: config('services.shopee.base_url'),
             accessToken: data_get($config, 'auth.access_token.token'),
-            providerId: $provider?->provider_id,
+            externalShopId: $shop?->external_shop_id,
             refreshToken: data_get($config, 'auth.refresh_token.token'),
         );
 
-        $service->provider = $provider;
+        $service->shop = $shop;
 
         return $service;
     }
 
-    public static function canCreate(Provider $provider): bool
+    public static function canCreate(Shop $shop): bool
     {
-        return $provider->provider_type === ProvidersEnum::SHOPEE->value;
+        return $shop->shop_type === ShopsEnum::SHOPEE->value;
     }
 
     private function validateState(string $state): bool
@@ -98,11 +99,11 @@ class ShopeeService implements ProviderContract
     {
         $code  = $request->query('code');
         $state = (string) $request->query('state');
-        $providerId =  $request->query('shop_id');
+        $externalShopId =  $request->query('shop_id');
         $idType = 'shop_id';
 
-        if (!$providerId) {
-            $providerId = $request->query('main_account_id');
+        if (!$externalShopId) {
+            $externalShopId = $request->query('main_account_id');
             $idType = 'main_account_id';
         }
 
@@ -114,54 +115,54 @@ class ShopeeService implements ProviderContract
             throw new Exception('state is wrong');
         }
 
-        if (! $providerId) {
+        if (! $externalShopId) {
             throw new Exception('Unable to collect account id');
         }
 
-        $data = $this->connector->authorization()->getToken($code, $providerId, $idType);
+        $data = $this->connector->authorization()->getToken($code, $externalShopId, $idType);
 
         $return  = [];
 
         if (!$data?->shopIdList || empty($data->shopIdList)) {
-            $return[] = $this->createShope($data, $providerId);
+            $return[] = $this->createShop($data, $externalShopId);
         } else {
-            $return = $this->createShops($data, $providerId);
+            $return = $this->createShops($data, $externalShopId);
         }
 
         return $return;
     }
 
-    public function refreshToken(): Provider
+    public function refreshToken(): Shop
     {
         try {
             $data = $this->connector->authorization()->refreshToken();
 
-            $configuration = $this->provider->configuration;
+            $configuration = $this->shop->configuration;
             $configuration['auth']['access_token']['token']       = $data->accessToken;
             $configuration['auth']['access_token']['expired_in']  = now()->addSeconds($data->expireIn);
             $configuration['auth']['refresh_token']['token']      = $data->refreshToken;
             $configuration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
 
-            $this->provider->configuration = $configuration;
-            $this->provider->save();
+            $this->shop->configuration = $configuration;
+            $this->shop->save();
         } catch (Throwable $e) {
-            Provider::query()->where('id', $this->provider->id)
+            Shop::query()->where('id', $this->shop->id)
                 ->update([
                     'is_active' => false
                 ]);
         }
 
-        return $this->provider;
+        return $this->shop;
     }
 
     private function createShops(GetTokenData $data, int $mainAccountId)
     {
 
-        $providers =  DB::transaction(function () use ($data, $mainAccountId) {
-            return collect($data->shopIdList)->map(fn($providerId) => Provider::updateOrCreate(
+        $shops =  DB::transaction(function () use ($data, $mainAccountId) {
+            return collect($data->shopIdList)->map(fn($externalShopId) => Shop::updateOrCreate(
                 [
-                    "provider_type" => ProvidersEnum::SHOPEE->value,
-                    "provider_id" => $providerId
+                    "shop_type" => ShopsEnum::SHOPEE->value,
+                    "external_shop_id" => $externalShopId
                 ],
                 [
                     'is_active' => true,
@@ -182,12 +183,12 @@ class ShopeeService implements ProviderContract
             ));
         });
 
-        $providers->each(fn($provider) => RefreshProviderTokenJob::dispatch($provider->id));
+        $shops->each(fn($shop) => RefreshShopTokenJob::dispatch($shop->id));
 
-        return $providers->all();
+        return $shops->all();
     }
 
-    private function createShope(GetTokenData $data, int $providerId)
+    private function createShop(GetTokenData $data, int $externalShopId)
     {
         $configuration = [
             'auth' => [
@@ -202,10 +203,10 @@ class ShopeeService implements ProviderContract
             ],
         ];
 
-        return Provider::updateOrCreate(
+        return Shop::updateOrCreate(
             [
-                "provider_type" => ProvidersEnum::SHOPEE->value,
-                "provider_id" => $providerId
+                "shop_type" => ShopsEnum::SHOPEE->value,
+                "external_shop_id" => $externalShopId
             ],
             [
                 'is_active' => true,
@@ -214,7 +215,16 @@ class ShopeeService implements ProviderContract
         );
     }
 
-    public function requestOrders() {}
+    public function getOrders(array $data)
+    {
+        $orderSn  = $data['order_sn'];
+        $withPending = $data['with_pending'];
+        return $this->connector
+            ->order()
+            ->getOrderDetails($orderSn, $withPending);
+    }
+
+    public function createOrder(GetOrderDetails $order) {}
 
     public function processOrder() {}
 

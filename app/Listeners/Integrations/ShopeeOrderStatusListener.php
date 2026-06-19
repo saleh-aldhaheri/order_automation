@@ -4,8 +4,8 @@ namespace App\Listeners;
 
 use App\Data\Integrations\Shopee\OrderStatusPushData;
 use App\Enums\Integrations\ShopeeEventsEnum;
-use App\Enums\ProvidersEnum;
-use App\Models\Provider;
+use App\Enums\ShopsEnum;
+use App\Models\Shop;
 use App\Services\Integrations\ShopeeService;
 
 class ShopeeOrderStatusListener
@@ -30,15 +30,15 @@ class ShopeeOrderStatusListener
             return;
         }
 
-        $provider = Provider::query()
-            ->where('provider_id', $data->shopId)
-            ->where('provider_type', ProvidersEnum::SHOPEE->value)
+        $shop = Shop::query()
+            ->where('external_shop_id', $data->shopId)
+            ->where('shop_type', ShopsEnum::SHOPEE->value)
             ->first();
 
-        if (!$provider) {
+        if (!$shop) {
             return;
         }
 
-        ShopeeService::make($provider)->handleOrderStatus($data);
+        ShopeeService::make($shop)->handleOrderStatus($data);
     }
 }

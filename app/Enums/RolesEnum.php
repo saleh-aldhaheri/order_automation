@@ -26,8 +26,8 @@ enum RolesEnum: string
             PermissionsEnum::PERMISSION_UPDATE,
             PermissionsEnum::PERMISSION_DELETE,
             PermissionsEnum::SEND_INVITATION,
-            PermissionsEnum::PROVIDER_VIEW,
-            PermissionsEnum::PROVIDER_CONNECT
+            PermissionsEnum::SHOP_VIEW,
+            PermissionsEnum::SHOP_CONNECT
         ];
     }
 

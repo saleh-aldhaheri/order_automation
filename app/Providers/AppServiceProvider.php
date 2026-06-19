@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('appSettings', app(SettingService::class)->getSettings());
         });
 
-        RateLimiter::for('provider-refresh', function () {
+        RateLimiter::for('shop-refresh', function () {
             return Limit::perSecond(10);
         });
     }

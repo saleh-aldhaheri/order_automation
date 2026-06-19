@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('providers', function (Blueprint $table) {
+        Schema::create('shops', function (Blueprint $table) {
             $table->id();
-            $table->string('provider_type');
-            $table->string('provider_id');
+            $table->string('shop_type');
+            $table->string('external_shop_id');
             $table->boolean('is_active')->default(false);
             $table->json('configuration');
             $table->timestamps();
-            $table->unique(['provider_type', 'provider_id']);
+            $table->unique(['shop_type', 'external_shop_id']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('providers');
+        Schema::dropIfExists('shops');
     }
 };

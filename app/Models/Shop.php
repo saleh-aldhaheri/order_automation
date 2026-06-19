@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Provider extends Model
+class Shop extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProviderFactory> */
+    /** @use HasFactory<\Database\Factories\ShopFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'provider_type',
-        'provider_id',
+        'shop_type',
+        'external_shop_id',
         'is_active',
         'configuration',
     ];

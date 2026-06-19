@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum ProvidersEnum: string
+enum ShopsEnum: string
 {
     case SHOPEE = 'shopee';
 }

@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\PermissionsEnum;
-use App\Enums\ProvidersEnum;
+use App\Enums\ShopsEnum;
 use App\Enums\RolesEnum;
-use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ExternalSystemController;
 use App\Http\Controllers\Web\PermissionController;
@@ -115,21 +115,21 @@ Route::middleware('auth')
                         ->middleware(PermissionsEnum::SETTINGS_UPDATE->middleware());
                 });
 
-            Route::prefix('provider/{type}')
-                ->as('provider.')
+            Route::prefix('shop/{type}')
+                ->as('shop.')
                 ->group(function () {
 
-                    Route::get('/redirect', [ProviderController::class,  'redirect'])
-                        ->middleware(PermissionsEnum::PROVIDER_CONNECT->middleware())
+                    Route::get('/redirect', [ShopController::class,  'redirect'])
+                        ->middleware(PermissionsEnum::SHOP_CONNECT->middleware())
                         ->name('redirect');
 
-                    Route::get('/callback', [ProviderController::class,  'callback'])
+                    Route::get('/callback', [ShopController::class,  'callback'])
                         ->name('callback');
 
-                    Route::get('/refresh/{provider}', [ProviderController::class,  'refresh'])
-                        ->middleware([PermissionsEnum::PROVIDER_REFRESH->middleware(), 'throttle:provider-refresh'])
+                    Route::get('/refresh/{shop}', [ShopController::class,  'refresh'])
+                        ->middleware([PermissionsEnum::SHOP_REFRESH->middleware(), 'throttle:shop-refresh'])
                         ->name('refresh');
                 })
-                ->whereIn('type', array_column(ProvidersEnum::cases(), 'value'));
+                ->whereIn('type', array_column(ShopsEnum::cases(), 'value'));
         });
     });

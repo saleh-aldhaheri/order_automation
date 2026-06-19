@@ -2,10 +2,10 @@
 
 namespace App\Integrations\Shopee;
 
-use App\Enums\ProvidersEnum;
+use App\Enums\ShopsEnum;
 use App\Integrations\Shopee\Resources\Authorization;
 use App\Integrations\Shopee\Resources\Order;
-use App\Models\Provider;
+use App\Models\Shop;
 use Exception;
 use Saloon\Http\Connector;
 use Saloon\Http\PendingRequest;
@@ -100,19 +100,19 @@ class ShopeeConnector extends Connector
     public function refresh(): void
     {
         $refreshData = $this->authorization()->refreshToken();
-        $provider = Provider::query()
-            ->where('provider_type', ProvidersEnum::SHOPEE->value)
-            ->where('provider_id', $this->accountId)
+        $shop = Shop::query()
+            ->where('shop_type', ShopsEnum::SHOPEE->value)
+            ->where('external_shop_id', $this->accountId)
             ->firstOrFail();
 
-        $configuration = $provider->configuration;
+        $configuration = $shop->configuration;
         $configuration['auth']['access_token']['token']       = $refreshData->accessToken;
         $configuration['auth']['access_token']['expired_in']  = now()->addSeconds($refreshData->expireIn);
         $configuration['auth']['refresh_token']['token']      = $refreshData->refreshToken;
         $configuration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
 
-        $provider->configuration = $configuration;
-        $provider->save();
+        $shop->configuration = $configuration;
+        $shop->save();
 
         $this->accessToken  = $refreshData->accessToken;
         $this->refreshToken = $refreshData->refreshToken;

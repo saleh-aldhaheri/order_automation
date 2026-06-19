@@ -22,9 +22,9 @@ enum PermissionsEnum: string
     case PERMISSION_UPDATE = 'permission:update';
     case PERMISSION_DELETE = 'permission:delete';
 
-    case PROVIDER_VIEW = 'provider:view';
-    case PROVIDER_CONNECT = 'provider:connect';
-    case PROVIDER_REFRESH = 'provider:refresh';
+    case SHOP_VIEW = 'shop:view';
+    case SHOP_CONNECT = 'shop:connect';
+    case SHOP_REFRESH = 'shop:refresh';
 
     case SEND_INVITATION = 'send:invitation';
 

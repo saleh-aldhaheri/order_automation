@@ -9,14 +9,12 @@ class Order extends Resource
 {
 
     public function getOrderDetails(
-        string $orderSnList,
+        array $orderSnList,
         ?bool $requestOrderStatusPending = true,
-        ?string $responseOptionalFiled = ''
-    ) {
+    ): mixed {
         return $this->connector->send(new GetOrderDetails(
             $orderSnList,
             $requestOrderStatusPending,
-            $responseOptionalFiled
         ))->dtoOrFail();
     }
 }

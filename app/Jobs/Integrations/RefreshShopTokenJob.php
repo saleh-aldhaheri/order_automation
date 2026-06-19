@@ -2,8 +2,8 @@
 
 namespace App\Jobs\Integrations;
 
-use App\Models\Provider;
-use App\Services\ProviderService;
+use App\Models\Shop;
+use App\Services\ShopService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -11,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\SerializesModels;
 
-class RefreshProviderTokenJob implements ShouldQueue
+class RefreshShopTokenJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,19 +30,19 @@ class RefreshProviderTokenJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $provider = Provider::query()->where('id', $this->id)->first();
+        $shop = Shop::query()->where('id', $this->id)->first();
 
-        if (!$provider) {
+        if (!$shop) {
             return;
         }
 
-        app(ProviderService::class)
-            ->setProviderFromModel($provider)
+        app(ShopService::class)
+            ->setShopFromModel($shop)
             ->refresh();
     }
 
     public function middleware(): array
     {
-        return  [new RateLimited('provider-refresh')];
+        return  [new RateLimited('shop-refresh')];
     }
 }
