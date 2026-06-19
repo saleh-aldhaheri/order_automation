@@ -1,0 +1,20 @@
+# Code is bind-mounted at runtime, so keep the build context tiny.
+.git
+node_modules
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+public/build
+public/hot
+public/storage
+.env
+.env.backup
+*.log
+.idea
+.vscode
+.fleet
+.zed
+.phpunit.cache
+.phpunit.result.cache
