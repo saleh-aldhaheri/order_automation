@@ -28,6 +28,8 @@ use App\Integrations\Shopee\Requests\Orders\{
 class Orders extends Resource
 {
     /**
+     * Fetch full order details for the given order_sn values (limit 50).
+     *
      * @param  list<string>  $orderSnList
      * @return \Illuminate\Support\Collection<int, GetOrderDetailsData>
      */
@@ -41,6 +43,9 @@ class Orders extends Resource
         ))->dtoOrFail();
     }
 
+    /**
+     * List orders in a time window (reconciliation sync); paginate via the cursor.
+     */
     public function getOrderList(
         string $timeRangeField,
         int $timeFrom,
@@ -66,6 +71,8 @@ class Orders extends Resource
     }
 
     /**
+     * Split one order into multiple packages.
+     *
      * @param  array<int, SplitOrderPackageData>  $packageList
      */
     public function splitOrder(string $orderSn, array $packageList): SplitOrderData
@@ -73,16 +80,26 @@ class Orders extends Resource
         return $this->connector->send(new SplitOrder($orderSn, $packageList))->dtoOrFail();
     }
 
+    /**
+     * Undo a split — return the order to a single package.
+     */
     public function unsplitOrder(string $orderSn): bool
     {
         return $this->connector->send(new UnsplitOrder($orderSn))->dtoOrFail();
     }
 
+    /**
+     * List orders ready to ship (READY_TO_SHIP / RETRY_SHIP). May be deprecated —
+     * prefer searchPackageList().
+     */
     public function getShipmentList(int $pageSize = 20, ?string $cursor = null): GetShipmentListData
     {
         return $this->connector->send(new GetShipmentList($pageSize, $cursor))->dtoOrFail();
     }
 
+    /**
+     * Search not-yet-shipped packages with filters (preferred over getShipmentList).
+     */
     public function searchPackageList(
         int $pageSize = 20,
         ?string $cursor = null,
@@ -95,6 +112,8 @@ class Orders extends Resource
     }
 
     /**
+     * Get package details for the given package numbers (limit 50).
+     *
      * @param  array<int, string>  $packageNumberList
      * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\PackageDetailData>
      */

@@ -14,6 +14,9 @@ use App\Integrations\Shopee\Requests\Authorization\{
 
 class Authorization extends Resource
 {
+    /**
+     * Refresh the shop access token using the stored refresh token.
+     */
     public function refreshAccessToken(): RefreshAccessTokenData
     {
         return $this->connector->send(new RefreshAccessToken(
@@ -23,6 +26,9 @@ class Authorization extends Resource
         ))->dtoOrFail();
     }
 
+    /**
+     * Exchange an authorization code for a shop access token.
+     */
     public function getAccessToken(
         string $code,
         int|string $accountId,
