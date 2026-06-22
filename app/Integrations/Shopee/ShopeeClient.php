@@ -2,8 +2,6 @@
 
 namespace App\Integrations\Shopee;
 
-use App\Integrations\Shopee\Resources\Authorization;
-use App\Integrations\Shopee\Resources\Orders;
 use Closure;
 use Exception;
 use Saloon\Http\Connector;
@@ -12,6 +10,11 @@ use Saloon\Traits\Plugins\HasTimeout;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Request;
 use Saloon\Exceptions\Request\RequestException;
+use App\Integrations\Shopee\Resources\{
+    Authorization,
+    Logistics,
+    Orders
+};
 
 class ShopeeClient extends Connector
 {
@@ -117,5 +120,10 @@ class ShopeeClient extends Connector
     public function order(): Orders
     {
         return new Orders($this);
+    }
+
+    public function logistic()
+    {
+        return new Logistics($this);
     }
 }

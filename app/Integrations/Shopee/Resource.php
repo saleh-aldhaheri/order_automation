@@ -4,7 +4,7 @@ namespace App\Integrations\Shopee;
 
 use App\Integrations\Shopee\ShopeeClient;
 
-class Resource
+abstract class Resource
 {
     public function __construct(
         protected ShopeeClient $connector

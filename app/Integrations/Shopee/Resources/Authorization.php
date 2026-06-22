@@ -2,11 +2,15 @@
 
 namespace App\Integrations\Shopee\Resources;
 
-use App\Integrations\Shopee\Data\GetAccessTokenData;
-use App\Integrations\Shopee\Data\RefreshAccessTokenData;
-use App\Integrations\Shopee\Requests\Authorization\GetAccessToken;
-use App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken;
 use App\Integrations\Shopee\Resource;
+use App\Integrations\Shopee\Data\{
+    GetAccessTokenData,
+    RefreshAccessTokenData
+};
+use App\Integrations\Shopee\Requests\Authorization\{
+    GetAccessToken,
+    RefreshAccessToken
+};
 
 class Authorization extends Resource
 {
