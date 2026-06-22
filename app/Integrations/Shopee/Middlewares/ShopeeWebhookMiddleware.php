@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware\Integrations;
+namespace App\Integrations\Shopee\Middlewares;
 
 use Closure;
 use Illuminate\Http\Request;

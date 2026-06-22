@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Listeners\Integrations;
 
 use App\Data\Integrations\Requests\SyncOrderRequestData;
-use App\Enums\Integrations\ShopeeEventsEnum;
 use App\Enums\ShopsEnum;
+use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
 use App\Models\Shop;
 use App\Services\ShopService;
 

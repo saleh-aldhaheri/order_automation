@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Events\Integrations;
+namespace App\Integrations\Shopee\Events;
 
-use App\Enums\Integrations\ShopeeEventsEnum;
+use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

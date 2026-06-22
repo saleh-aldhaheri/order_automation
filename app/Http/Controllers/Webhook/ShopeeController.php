@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Webhook;
 
-use App\Enums\Integrations\ShopeeEventsEnum;
-use App\Events\Integrations\ShopeeWebhookEvent;
+use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
+use App\Integrations\Shopee\Events\ShopeeWebhookEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

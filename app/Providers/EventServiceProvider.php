@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Events\Integrations\ShopeeWebhookEvent;
-use App\Listeners\ShopeeOrderStatusListener;
+use App\Integrations\Shopee\Events\ShopeeWebhookEvent;
+use App\Listeners\Integrations\ShopeeOrderStatusListener;
 use App\Models\User;
 use App\Observers\UserObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;

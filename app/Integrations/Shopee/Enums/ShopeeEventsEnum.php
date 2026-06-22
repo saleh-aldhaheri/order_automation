@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\Integrations;
+namespace App\Integrations\Shopee\Enums;
 
 enum ShopeeEventsEnum: int
 {
