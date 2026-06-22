@@ -4,11 +4,13 @@ namespace App\Integrations\Shopee\Resources;
 
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\GetOrderListData;
+use App\Integrations\Shopee\Data\GetShipmentListData;
 use App\Integrations\Shopee\Data\SplitOrderData;
 use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
 use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Integrations\Shopee\Requests\Orders\GetOrderList;
+use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
 use App\Integrations\Shopee\Requests\Orders\SplitOrder;
 use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
 use App\Integrations\Shopee\Resource;
@@ -65,5 +67,10 @@ class Orders extends Resource
     public function unsplitOrder(string $orderSn): bool
     {
         return $this->connector->send(new UnsplitOrder($orderSn))->dtoOrFail();
+    }
+
+    public function getShipmentList(int $pageSize = 20, ?string $cursor = null): GetShipmentListData
+    {
+        return $this->connector->send(new GetShipmentList($pageSize, $cursor))->dtoOrFail();
     }
 }
