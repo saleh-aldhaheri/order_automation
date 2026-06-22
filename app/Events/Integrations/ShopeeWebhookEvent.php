@@ -2,6 +2,7 @@
 
 namespace App\Events\Integrations;
 
+use App\Enums\Integrations\ShopeeEventsEnum;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,6 +16,6 @@ class ShopeeWebhookEvent
      */
     public function __construct(
         public array $payload,
-        public int $code
+        public ShopeeEventsEnum $eventType
     ) {}
 }

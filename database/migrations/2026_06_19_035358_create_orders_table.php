@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,9 +18,9 @@ return new class extends Migration
             $table->foreignId('shop_id')
                 ->constrained();
             $table->string('shop_type');
-            $table->string('shop_status');
-            $table->boolean('is_processed')
-                ->default(false);
+            $table->string('external_order_status');
+            $table->string('order_status')
+                ->default(OrderStatusEnum::UNPROCESSED->value);
             $table->json('details')->nullable();
             $table->timestamps();
             $table->unique([

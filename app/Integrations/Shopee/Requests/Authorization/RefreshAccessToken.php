@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Integrations\Shopee\Requests;
+namespace App\Integrations\Shopee\Requests\Authorization;
 
-use App\Data\Integrations\Shopee\RefreshTokenData;
+use App\Integrations\Shopee\Data\RefreshAccessTokenData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
-class RefreshToken extends Request implements HasBody
+class RefreshAccessToken extends Request implements HasBody
 {
     use HasJsonBody;
 
@@ -19,7 +19,7 @@ class RefreshToken extends Request implements HasBody
     public function __construct(
         private readonly string $refreshToken,
         private readonly int $partnerId,
-        private readonly int|string $accountId,
+        private readonly int|string $shopId,
     ) {}
 
     public function resolveEndpoint(): string
@@ -32,12 +32,12 @@ class RefreshToken extends Request implements HasBody
         return [
             'refresh_token' => $this->refreshToken,
             'partner_id'    => $this->partnerId,
-            'shop_id'            => $this->accountId,
+            'shop_id'       => $this->shopId,
         ];
     }
 
-    public function createDtoFromResponse(Response $response): RefreshTokenData
+    public function createDtoFromResponse(Response $response): RefreshAccessTokenData
     {
-        return RefreshTokenData::fromArray($response->json());
+        return RefreshAccessTokenData::from($response->json());
     }
 }

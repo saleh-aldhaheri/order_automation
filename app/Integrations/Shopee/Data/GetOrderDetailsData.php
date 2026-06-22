@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Data\Integrations\Shopee;
+namespace App\Integrations\Shopee\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
-use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
@@ -15,7 +15,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  * `response_optional_fields` parameter, or is conditionally returned (pending,
  * advance fulfilment, cancellation, prescription, BR-only, etc.).
  */
-#[MapInputName(SnakeCaseMapper::class)]
+#[MapName(SnakeCaseMapper::class)]
 class GetOrderDetailsData extends Data
 {
     /**

@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Enums\Integrations;
-
-use App\Enums\OrderStatusEnum;
+namespace App\Integrations\Shopee\Enums;
 
 enum ShopeeOrderStatusEnum: string
 {
@@ -46,22 +44,6 @@ enum ShopeeOrderStatusEnum: string
             self::IN_CANCEL          => 'The order\'s cancellation is under processing.',
             self::CANCELLED          => 'The order has been cancelled.',
             self::TO_RETURN          => 'The buyer requested to return the order and the return is processing.',
-        };
-    }
-
-    public function toLocalStatus(): OrderStatusEnum
-    {
-        return match ($this) {
-            self::UNPAID,
-            self::READY_TO_SHIP        => OrderStatusEnum::UNPROCESSED,
-            self::PROCESSED,
-            self::SHIPPED,
-            self::TO_CONFIRM_RECEIVE,
-            self::COMPLETED,
-            self::RETRY_SHIP           => OrderStatusEnum::PROCESSED,
-            self::IN_CANCEL,
-            self::CANCELLED            => OrderStatusEnum::CANCELLED,
-            self::TO_RETURN            => OrderStatusEnum::RETURNING,
         };
     }
 }

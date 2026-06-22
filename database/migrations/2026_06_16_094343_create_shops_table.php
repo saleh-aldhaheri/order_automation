@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('shop_type');
             $table->string('external_shop_id');
             $table->boolean('is_active')->default(false);
-            $table->json('configuration');
+            $table->json('auth_configuration');
             $table->timestamps();
             $table->unique(['shop_type', 'external_shop_id']);
         });

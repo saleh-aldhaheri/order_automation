@@ -15,10 +15,10 @@ class ShopeeController
 
         $code   = data_get($payload, 'code');
 
-        $type = ShopeeEventsEnum::tryFrom((int) $code);
+        $eventType = ShopeeEventsEnum::tryFrom((int) $code);
 
-        if ($type) {
-            ShopeeWebhookEvent::dispatch($payload, $code);
+        if ($eventType) {
+            ShopeeWebhookEvent::dispatch($payload, $eventType);
         }
 
         return response('', 200);

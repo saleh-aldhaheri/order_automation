@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\ShopsEnum;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
 {
@@ -14,18 +17,29 @@ class Shop extends Model
         'shop_type',
         'external_shop_id',
         'is_active',
-        'configuration',
+        'auth_configuration',
     ];
 
     /**
-     * Hidden from array/JSON serialization — `configuration` holds OAuth
+     * Hidden from array/JSON serialization — `auth_configuration` holds OAuth
      * @var list<string>
      */
     protected $hidden = [
-        'configuration',
+        'auth_configuration',
     ];
 
     protected  $casts = [
-        "configuration" => 'array'
+        "auth_configuration" => 'array',
+        'shop_type' => ShopsEnum::class
     ];
+
+    public function scopeGetShop(Builder $query, string $externalShopId, ShopsEnum $shopType): void
+    {
+        $query->where('external_shop_id', $externalShopId)->where('shop_type', $shopType->value);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 }

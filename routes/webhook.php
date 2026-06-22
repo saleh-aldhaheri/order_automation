@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\webhook\ShopeeController;
+use App\Http\Controllers\Webhook\ShopeeController;
 use App\Http\Middleware\Integrations\ShopeeWebhookMiddleware;
 
 Route::post('/shopee', ShopeeController::class)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Data\Integrations\Shopee;
+namespace App\Integrations\Shopee\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;

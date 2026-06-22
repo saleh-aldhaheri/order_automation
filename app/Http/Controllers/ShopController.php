@@ -4,39 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Enums\ShopsEnum;
 use App\Models\Shop;
+use App\Services\ShopAuthService;
 use App\Services\ShopService;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
 {
     public function __construct(
+        public ShopAuthService $shopAuthService,
         public ShopService $shopService
     ) {}
 
     public function redirect(string $type)
     {
-        $url = $this->shopService
+        $url = $this->shopAuthService
             ->setShop(ShopsEnum::from($type))
-            ->url();
+            ->constructUrl();
 
         return redirect($url);
     }
 
-    public function callback(Request $request, string $type): array
+    public function callback(Request $request, string $type)
     {
-        $shop =  $this->shopService
+        $data =  $this->shopAuthService
             ->setShop(ShopsEnum::from($type))
             ->callback($request);
 
-        return $shop;
+        ShopService::createShops($data);
+
+        return 'we will decide later what we will return';
     }
 
     public function refresh(string $type, Shop $shop): Shop
     {
         $shop = $this->shopService
-            ->setShopFromModel($shop)
-            ->refresh();
-
+            ->setShop($shop)
+            ->refreshAuthConfiguration();
         return $shop;
     }
 }

@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Integrations\Shopee\Requests;
+namespace App\Integrations\Shopee\Requests\Order;
 
-use App\Data\Integrations\Shopee\GetOrderDetailsData;
+use App\Integrations\Shopee\Data\GetOrderDetailsData;
+use Illuminate\Support\Collection;
+use RuntimeException;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -54,15 +56,10 @@ class GetOrderDetails extends Request
      *     Migration-period compatibility flag. Sending true makes the API support
      *     the PENDING status and return pending_terms; sending false (or omitting it)
      *     falls back to the old logic.
-     *
-     * @param  ?string  $responseOptionalFiled
-     *     Comma-separated list of optional response fields to include. If an object
-     *     field is given, all of its sub-params are included automatically.
      */
     public function __construct(
         public array $orderSnList,
         public ?bool $requestOrderStatusPending = false,
-
     ) {}
 
     public function resolveEndpoint(): string
@@ -79,10 +76,25 @@ class GetOrderDetails extends Request
         ];
     }
 
-    public function createDtoFromResponse(Response $response): mixed
+    /**
+     * Inbound boundary: Shopee `response.order_list` -> faithful vendor DTOs.
+     *
+     * Translation into the application's GetOrderResponseData happens in
+     * {@see \App\Services\Integrations\ShopeeService} — this layer only speaks
+     * Shopee's language.
+     *
+     * @return \Illuminate\Support\Collection<int, GetOrderDetailsData>
+     */
+    public function createDtoFromResponse(Response $response): Collection
     {
-        $ordersList = data_get($response->json()['response'], 'order_list');
-        $ordersList = $ordersList->map(fn($order) => GetOrderDetailsData::from($order));
-        return $ordersList;
+        $json = $response->json();
+
+        if (! empty($json['error'])) {
+            throw new RuntimeException($json['error']);
+        }
+
+        $orders = data_get($json, 'response.order_list', []);
+
+        return GetOrderDetailsData::collect($orders, Collection::class);
     }
 }

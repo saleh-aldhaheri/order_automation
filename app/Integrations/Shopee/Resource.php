@@ -2,11 +2,11 @@
 
 namespace App\Integrations\Shopee;
 
-use App\Integrations\Shopee\ShopeeConnector;
+use App\Integrations\Shopee\ShopeeClient;
 
 class Resource
 {
     public function __construct(
-        protected ShopeeConnector $connector
+        protected ShopeeClient $connector
     ) {}
 }

@@ -2,10 +2,9 @@
 
 namespace App\Integrations\Shopee;
 
-use App\Enums\ShopsEnum;
 use App\Integrations\Shopee\Resources\Authorization;
 use App\Integrations\Shopee\Resources\Order;
-use App\Models\Shop;
+use Closure;
 use Exception;
 use Saloon\Http\Connector;
 use Saloon\Http\PendingRequest;
@@ -14,7 +13,7 @@ use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Request;
 use Saloon\Exceptions\Request\RequestException;
 
-class ShopeeConnector extends Connector
+class ShopeeClient extends Connector
 {
     use HasTimeout;
 
@@ -33,8 +32,9 @@ class ShopeeConnector extends Connector
         public readonly string $partnerKey,
         public readonly string $baseUrl,
         protected ?string $accessToken = null,
-        public readonly ?string $accountId = null,      // shop_id | merchant_id
+        public readonly ?string $shopId = null,      // shop_id | merchant_id
         public ?string $refreshToken = null,
+        private ?Closure $persistRefreshedToken =  null,
     ) {}
 
     protected function defaultHeaders(): array
@@ -55,10 +55,10 @@ class ShopeeConnector extends Connector
         $base = $this->partnerId . $path . $timestamp;
 
         if (! $isPublic) {
-            if (!$this->accessToken || !$this->accountId) {
+            if (!$this->accessToken || !$this->shopId) {
                 throw new Exception("access token or account id missing for a shop API call");
             }
-            $base .= $this->accessToken . $this->accountId;
+            $base .= $this->accessToken . $this->shopId;
         }
 
         return hash_hmac('sha256', $base, $this->partnerKey);
@@ -77,7 +77,7 @@ class ShopeeConnector extends Connector
 
         if (! $isPublic && $this->accessToken) {
             $query['access_token'] = $this->accessToken;
-            $query['shop_id'] = $this->accountId;
+            $query['shop_id'] = $this->shopId;
         }
 
         $query['sign'] = $this->sign($path, $timestamp, $isPublic);
@@ -99,23 +99,14 @@ class ShopeeConnector extends Connector
 
     public function refresh(): void
     {
-        $refreshData = $this->authorization()->refreshToken();
-        $shop = Shop::query()
-            ->where('shop_type', ShopsEnum::SHOPEE->value)
-            ->where('external_shop_id', $this->accountId)
-            ->firstOrFail();
-
-        $configuration = $shop->configuration;
-        $configuration['auth']['access_token']['token']       = $refreshData->accessToken;
-        $configuration['auth']['access_token']['expired_in']  = now()->addSeconds($refreshData->expireIn);
-        $configuration['auth']['refresh_token']['token']      = $refreshData->refreshToken;
-        $configuration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
-
-        $shop->configuration = $configuration;
-        $shop->save();
+        $refreshData = $this->authorization()->refreshAccessToken();
 
         $this->accessToken  = $refreshData->accessToken;
         $this->refreshToken = $refreshData->refreshToken;
+
+        if ($this->persistRefreshedToken !== null) {
+            ($this->persistRefreshedToken)($refreshData);
+        }
     }
 
     public function authorization(): Authorization

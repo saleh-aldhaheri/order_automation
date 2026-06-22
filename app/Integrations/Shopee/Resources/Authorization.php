@@ -2,29 +2,29 @@
 
 namespace App\Integrations\Shopee\Resources;
 
-use App\Data\Integrations\Shopee\GetTokenData;
-use App\Data\Integrations\Shopee\RefreshTokenData;
-use App\Integrations\Shopee\Requests\GetToken;
-use App\Integrations\Shopee\Requests\RefreshToken;
+use App\Integrations\Shopee\Data\GetAccessTokenData;
+use App\Integrations\Shopee\Data\RefreshAccessTokenData;
+use App\Integrations\Shopee\Requests\Authorization\GetAccessToken;
+use App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken;
 use App\Integrations\Shopee\Resource;
 
 class Authorization extends Resource
 {
-    public function refreshToken(): RefreshTokenData
+    public function refreshAccessToken(): RefreshAccessTokenData
     {
-        return $this->connector->send(new RefreshToken(
+        return $this->connector->send(new RefreshAccessToken(
             $this->connector->refreshToken,
             $this->connector->partnerId,
-            $this->connector->accountId,
+            $this->connector->shopId,
         ))->dtoOrFail();
     }
 
-    public function getToken(
+    public function getAccessToken(
         string $code,
         int|string $accountId,
         string $idType,
-    ): GetTokenData {
-        return $this->connector->send(new GetToken(
+    ): GetAccessTokenData {
+        return $this->connector->send(new GetAccessToken(
             $code,
             $this->connector->partnerId,
             $accountId,

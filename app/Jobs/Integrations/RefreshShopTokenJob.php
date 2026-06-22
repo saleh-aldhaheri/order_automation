@@ -37,8 +37,8 @@ class RefreshShopTokenJob implements ShouldQueue
         }
 
         app(ShopService::class)
-            ->setShopFromModel($shop)
-            ->refresh();
+            ->setShop($shop)
+            ->refreshAuthConfiguration();
     }
 
     public function middleware(): array

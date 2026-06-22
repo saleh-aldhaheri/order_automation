@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Integrations\Shopee\Requests;
+namespace App\Integrations\Shopee\Requests\Authorization;
 
-use App\Data\Integrations\Shopee\GetTokenData;
+use App\Integrations\Shopee\Data\GetAccessTokenData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
-class GetToken extends Request implements HasBody
+class GetAccessToken extends Request implements HasBody
 {
     use HasJsonBody;
 
@@ -19,7 +19,7 @@ class GetToken extends Request implements HasBody
     public function __construct(
         private readonly string $code,
         private readonly int $partnerId,
-        private readonly int|string $accountId,
+        private readonly int|string $shopId,
         private readonly string $idType,   // 'shop_id' | 'main_account_id'
     ) {}
 
@@ -30,16 +30,15 @@ class GetToken extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-
         return [
-            'code'       => $this->code,
-            'partner_id' => $this->partnerId,
-            $this->idType         => $this->accountId,
+            'code'        => $this->code,
+            'partner_id'  => $this->partnerId,
+            $this->idType => $this->shopId,
         ];
     }
 
-    public function createDtoFromResponse(Response $response): GetTokenData
+    public function createDtoFromResponse(Response $response): GetAccessTokenData
     {
-        return GetTokenData::fromArray($response->json());
+        return GetAccessTokenData::from($response->json());
     }
 }
