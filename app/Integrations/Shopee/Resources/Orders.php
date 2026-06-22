@@ -7,14 +7,14 @@ use App\Integrations\Shopee\Data\GetOrderListData;
 use App\Integrations\Shopee\Data\SplitOrderData;
 use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
-use App\Integrations\Shopee\Requests\Order\GetOrderDetail;
-use App\Integrations\Shopee\Requests\Order\GetOrderList;
-use App\Integrations\Shopee\Requests\Order\SplitOrder;
-use App\Integrations\Shopee\Requests\Order\UnsplitOrder;
+use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
+use App\Integrations\Shopee\Requests\Orders\GetOrderList;
+use App\Integrations\Shopee\Requests\Orders\SplitOrder;
+use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
 use App\Integrations\Shopee\Resource;
 use Illuminate\Support\Collection;
 
-class Order extends Resource
+class Orders extends Resource
 {
     /**
      * @param  list<string>  $orderSnList

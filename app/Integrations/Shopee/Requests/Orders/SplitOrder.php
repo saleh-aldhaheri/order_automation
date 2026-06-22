@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Integrations\Shopee\Requests\Order;
+namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\SplitOrderData;
 use App\Integrations\Shopee\Data\SplitOrderPackageData;

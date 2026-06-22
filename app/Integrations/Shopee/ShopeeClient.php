@@ -3,7 +3,7 @@
 namespace App\Integrations\Shopee;
 
 use App\Integrations\Shopee\Resources\Authorization;
-use App\Integrations\Shopee\Resources\Order;
+use App\Integrations\Shopee\Resources\Orders;
 use Closure;
 use Exception;
 use Saloon\Http\Connector;
@@ -114,8 +114,8 @@ class ShopeeClient extends Connector
         return new Authorization($this);
     }
 
-    public function order(): Order
+    public function order(): Orders
     {
-        return new Order($this);
+        return new Orders($this);
     }
 }

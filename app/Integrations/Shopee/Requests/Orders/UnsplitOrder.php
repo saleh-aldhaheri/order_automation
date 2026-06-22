@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Integrations\Shopee\Requests\Order;
+namespace App\Integrations\Shopee\Requests\Orders;
 
 use RuntimeException;
 use Saloon\Enums\Method;
