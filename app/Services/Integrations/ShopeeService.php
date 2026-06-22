@@ -224,7 +224,7 @@ class ShopeeService implements ShopContract
     {
         return $this->connector
             ->order()
-            ->getOrderDetails($data->ordersId ?? [])
+            ->getOrderDetail($data->ordersId ?? [])
             ->map(fn(GetOrderDetailsData $order) => $this->toOrderResponse($order));
     }
 

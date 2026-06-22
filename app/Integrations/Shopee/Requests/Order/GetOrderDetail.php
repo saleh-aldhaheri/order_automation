@@ -9,7 +9,7 @@ use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-class GetOrderDetails extends Request
+class GetOrderDetail extends Request
 {
     protected Method $method = Method::GET;
 
