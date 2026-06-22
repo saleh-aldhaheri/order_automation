@@ -5,12 +5,17 @@ namespace App\Integrations\Shopee\Resources;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\GetOrderListData;
 use App\Integrations\Shopee\Data\GetShipmentListData;
+use App\Integrations\Shopee\Data\SearchPackageFilterData;
+use App\Integrations\Shopee\Data\SearchPackageListData;
+use App\Integrations\Shopee\Data\SearchPackageSortData;
 use App\Integrations\Shopee\Data\SplitOrderData;
 use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
 use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Integrations\Shopee\Requests\Orders\GetOrderList;
+use App\Integrations\Shopee\Requests\Orders\GetPackageDetail;
 use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
+use App\Integrations\Shopee\Requests\Orders\SearchPackageList;
 use App\Integrations\Shopee\Requests\Orders\SplitOrder;
 use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
 use App\Integrations\Shopee\Resource;
@@ -72,5 +77,25 @@ class Orders extends Resource
     public function getShipmentList(int $pageSize = 20, ?string $cursor = null): GetShipmentListData
     {
         return $this->connector->send(new GetShipmentList($pageSize, $cursor))->dtoOrFail();
+    }
+
+    public function searchPackageList(
+        int $pageSize = 20,
+        ?string $cursor = null,
+        ?SearchPackageFilterData $filter = null,
+        ?SearchPackageSortData $sort = null,
+    ): SearchPackageListData {
+        return $this->connector->send(
+            new SearchPackageList($pageSize, $cursor, $filter, $sort)
+        )->dtoOrFail();
+    }
+
+    /**
+     * @param  array<int, string>  $packageNumberList
+     * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\PackageDetailData>
+     */
+    public function getPackageDetail(array $packageNumberList): Collection
+    {
+        return $this->connector->send(new GetPackageDetail($packageNumberList))->dtoOrFail();
     }
 }

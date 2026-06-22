@@ -12,6 +12,7 @@ class PackageItemData extends Data
     public function __construct(
         public ?int $itemId = null,
         public ?int $modelId = null,
+        public ?string $itemSku = null,
         public ?int $modelQuantity = null,
         public ?int $orderItemId = null,
         public ?string $productLocationId = null,

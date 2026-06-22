@@ -44,9 +44,6 @@ class GetShipmentList extends Request
         return $query;
     }
 
-    /**
-     * Inbound boundary: Shopee `response` (order_list + pagination) -> vendor DTO.
-     */
     public function createDtoFromResponse(Response $response): GetShipmentListData
     {
         $json = $response->json();
