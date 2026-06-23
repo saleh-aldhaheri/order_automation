@@ -14,19 +14,20 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('shop_id')->constrained();
             $table->string('external_order_id');
-            $table->foreignId('shop_id')
-                ->constrained();
+            $table->string('external_shop_id'); //denormalization for faster query with webhooks
             $table->string('shop_type');
             $table->string('external_order_status');
             $table->string('order_status')
                 ->default(OrderStatusEnum::UNPROCESSED->value);
             $table->json('details')->nullable();
             $table->timestamps();
-            $table->unique([
-                'shop_id',
-                'external_order_id',
-            ]);
+
+            $table->unique(['shop_id', 'external_order_id']);
+            $table->index(['external_shop_id', 'external_order_id']);
+            $table->index('order_status');
+            $table->index('external_order_status');
         });
     }
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
-use App\Integrations\Shopee\Events\ShopeeWebhookEvent;
+use App\Integrations\Shopee\Events\ShopeeEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -18,7 +18,7 @@ class ShopeeController
         $eventType = ShopeeEventsEnum::tryFrom((int) $code);
 
         if ($eventType) {
-            ShopeeWebhookEvent::dispatch($payload, $eventType);
+            ShopeeEvent::dispatch($payload, $eventType);
         }
 
         return response('', 200);

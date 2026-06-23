@@ -6,7 +6,7 @@ use App\Data\Integrations\Requests\SyncOrderRequestData;
 use App\Enums\ShopsEnum;
 use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
 use App\Models\Shop;
-use App\Services\ShopService;
+use App\Services\OrderService;
 
 class ShopeeOrderStatusListener
 {
@@ -27,7 +27,7 @@ class ShopeeOrderStatusListener
             return;
         };
 
-        new ShopService()
+        new OrderService()
             ->setShop($shop)
             ->syncShopOrder(SyncOrderRequestData::fromShopee($event->payload));
     }

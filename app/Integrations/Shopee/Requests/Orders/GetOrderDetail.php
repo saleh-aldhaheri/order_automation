@@ -79,7 +79,7 @@ class GetOrderDetail extends Request
     /**
      * Inbound boundary: Shopee `response.order_list` -> faithful vendor DTOs.
      *
-     * Translation into the application's GetOrderResponseData happens in
+     * Translation into the application's OrderResponse happens in
      * {@see \App\Services\Integrations\ShopeeService} — this layer only speaks
      * Shopee's language.
      *

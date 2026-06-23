@@ -4,7 +4,8 @@ namespace App\Services\Integrations\Contracts;
 
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
-use App\Data\Integrations\Responses\GetOrderResponseData;
+use App\Data\Integrations\Responses\OrderResponse;
+use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Models\Shop;
 use Illuminate\Support\Collection;
@@ -37,7 +38,14 @@ interface ShopContract
     public function refreshAuthConfiguration(): array;
 
     /**
-     * @return \Illuminate\Support\Collection<int, GetOrderResponseData>
+     * @return \Illuminate\Support\Collection<int, OrderResponse>
      */
     public function getOrder(GetOrderRequestData $data): Collection;
+
+    /**
+     * Fetch just the parcels for the given order(s), as neutral DTOs.
+     *
+     * @return \Illuminate\Support\Collection<int, PackageResponse>
+     */
+    public function getOrderPackages(GetOrderRequestData $data): Collection;
 }

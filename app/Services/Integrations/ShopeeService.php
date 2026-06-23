@@ -4,10 +4,12 @@ namespace App\Services\Integrations;
 
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
-use App\Data\Integrations\Responses\GetOrderResponseData;
+use App\Data\Integrations\Responses\OrderResponse;
+use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Enums\OrderStatusEnum;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
+use App\Integrations\Shopee\Data\PackageData;
 use App\Enums\ShopsEnum;
 use App\Integrations\Shopee\Data\RefreshAccessTokenData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
@@ -15,6 +17,7 @@ use App\Integrations\Shopee\ShopeeClient;
 use App\Models\Shop;
 use App\Services\Integrations\Contracts\ShopContract;
 use Illuminate\Support\Collection;
+use Override;
 use RuntimeException;
 
 class ShopeeService implements ShopContract
@@ -218,7 +221,7 @@ class ShopeeService implements ShopContract
      * order DTOs. The integration layer returns Shopee's own DTOs; this service
      * is the seam that maps them into the application's language.
      *
-     * @return \Illuminate\Support\Collection<int, GetOrderResponseData>
+     * @return \Illuminate\Support\Collection<int, OrderResponse>
      */
     public function getOrder(GetOrderRequestData $data): Collection
     {
@@ -229,20 +232,53 @@ class ShopeeService implements ShopContract
     }
 
     /**
+     * Fetch the parcels for the given order(s) and translate them into the app's
+     * neutral package DTOs, flattened across every requested order.
+     *
+     * @return \Illuminate\Support\Collection<int, PackageResponse>
+     */
+    public function getOrderPackages(GetOrderRequestData $data): Collection
+    {
+        return $this->connector
+            ->order()
+            ->getOrderDetail($data->ordersId ?? [])
+            ->flatMap(fn(GetOrderDetailsData $order) => $this->toPackageResponses($order));
+    }
+
+    /**
      * Translate a single Shopee order DTO into the app's neutral order DTO,
      * stamping our internal shop id and mapping Shopee's status to the local one.
      */
-    private function toOrderResponse(GetOrderDetailsData $order): GetOrderResponseData
+    private function toOrderResponse(GetOrderDetailsData $order): OrderResponse
     {
         $status = ShopeeOrderStatusEnum::from($order->orderStatus);
 
-        return new GetOrderResponseData(
+        return new OrderResponse(
             externalOrderId: $order->orderSn,
             shopId: (string) $this->shop->id,
+            externalShopId: (string) $this->externalShopId,
             shopType: ShopsEnum::SHOPEE,
             externalOrderStatus: $status->value,
             orderStatus: OrderStatusEnum::fromShopee($status),
             details: $order->toArray(),
         );
+    }
+
+    /**
+     * Translate a Shopee order's parcels into the app's neutral package DTOs.
+     *
+     * @return array<int, PackageResponse>
+     */
+    private function toPackageResponses(GetOrderDetailsData $order): array
+    {
+        return collect($order->packageList ?? [])
+            ->map(fn(PackageData $package) => new PackageResponse(
+                externalPackageId: (string) $package->packageNumber,
+                externalOrderId: $order->orderSn,
+                shopType: ShopsEnum::SHOPEE,
+                externalPackageStatus: (string) $package->logisticsStatus,
+                details: $package->toArray(),
+            ))
+            ->all();
     }
 }

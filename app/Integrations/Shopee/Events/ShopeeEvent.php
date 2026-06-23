@@ -7,7 +7,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ShopeeWebhookEvent
+class ShopeeEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

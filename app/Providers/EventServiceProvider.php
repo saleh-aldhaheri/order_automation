@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Integrations\Shopee\Events\ShopeeWebhookEvent;
+use App\Integrations\Shopee\Events\ShopeeEvent;
 use App\Listeners\Integrations\ShopeeOrderStatusListener;
+use App\Listeners\Integrations\ShopeePackageStatusListener;
 use App\Models\User;
 use App\Observers\UserObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -11,8 +12,9 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        ShopeeWebhookEvent::class => [
+        ShopeeEvent::class => [
             ShopeeOrderStatusListener::class,
+            ShopeePackageStatusListener::class
         ],
     ];
 

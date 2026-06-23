@@ -10,19 +10,23 @@ class SyncOrderRequestData extends Data
 {
     public function __construct(
         public string $externalOrderId,
-        public string $externalOrderStatus,
-        public OrderStatusEnum $orderStatus,
+        public ?string $externalOrderStatus = null,
+        public ?OrderStatusEnum $orderStatus = null,
     ) {}
 
 
     public static function fromShopee(array $data): self
     {
-        $externalOrderStatus = ShopeeOrderStatusEnum::tryFrom(data_get($data['data'], 'order_status'));
+        $externalOrderStatus = null;
+
+        if (data_get($data['data'], 'order_status')) {
+            $externalOrderStatus = ShopeeOrderStatusEnum::tryFrom(data_get($data['data'], 'order_status'));
+        }
 
         return new self(
             externalOrderId: data_get($data['data'], 'order_sn'),
-            externalOrderStatus: $externalOrderStatus->value,
-            orderStatus: OrderStatusEnum::fromShopee($externalOrderStatus),
+            externalOrderStatus: $externalOrderStatus ? $externalOrderStatus?->value :  null,
+            orderStatus: $externalOrderStatus ? OrderStatusEnum::fromShopee($externalOrderStatus) : null
         );
     }
 }
