@@ -6,6 +6,7 @@ use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\SyncPackageRequestData;
 use App\Models\Order;
 use App\Models\Package;
+use App\Enums\PackageStatusEnum;
 use App\Models\Shop;
 use App\Services\Integrations\Contracts\ShopContract;
 use Closure;
@@ -49,20 +50,18 @@ class PackageService
 
         $existing->fill([
             'external_package_status' => $package->externalPackageStatus,
-            'package_status' => $package->externalPackageStatus, // temporary for now
+            'package_status' => PackageStatusEnum::fromShopee($package->externalPackageStatus)->value,
         ])->save();
 
         return true;
     }
 
     /**
-     * Rebuild an order's parcels from the marketplace.
+     * syncing an order's parcels from the marketplace.
      *
-     * Used when a pushed package number isn't known locally (e.g. the order was
-     * (re)split). `$beforeSync` lets the caller clear the order's current parcels
-     * first (e.g. `fn() => $order->packages()->delete()`). The fetch happens
-     * before the transaction; the clear + rebuild run inside it so the order is
-     * never left without parcels.
+     * @param Closure $beforeSync lets caller decide what need to done before syncing the package
+     * Example  delete the existing order packages before syncing fn() => $order->packages()->delete()`).
+     *
      */
     public function syncPackage(SyncPackageRequestData $package, Order $order, ?Closure $beforeSync = null): void
     {

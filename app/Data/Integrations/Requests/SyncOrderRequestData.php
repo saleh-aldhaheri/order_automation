@@ -19,12 +19,12 @@ class SyncOrderRequestData extends Data
     {
         $externalOrderStatus = null;
 
-        if (data_get($data['data'], 'order_status')) {
-            $externalOrderStatus = ShopeeOrderStatusEnum::tryFrom(data_get($data['data'], 'order_status'));
+        if (data_get($data['data'], 'status')) {
+            $externalOrderStatus = ShopeeOrderStatusEnum::tryFrom(data_get($data['data'], 'status'));
         }
 
         return new self(
-            externalOrderId: data_get($data['data'], 'order_sn'),
+            externalOrderId: data_get($data['data'], 'ordersn'),
             externalOrderStatus: $externalOrderStatus ? $externalOrderStatus?->value :  null,
             orderStatus: $externalOrderStatus ? OrderStatusEnum::fromShopee($externalOrderStatus) : null
         );

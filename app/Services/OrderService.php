@@ -30,10 +30,14 @@ class OrderService
             ->first();
 
         if ($order) {
-            $order->fill([
-                'external_order_status' => $syncOrderData->externalOrderStatus,
-                'order_status' => $syncOrderData->orderStatus->value
-            ])->save();
+            // A status-only push (e.g. the package flow) carries just the order id,
+            // so only stamp the status fields when the push actually included one.
+            if ($syncOrderData->orderStatus) {
+                $order->fill([
+                    'external_order_status' => $syncOrderData->externalOrderStatus,
+                    'order_status' => $syncOrderData->orderStatus->value,
+                ])->save();
+            }
 
             return;
         }

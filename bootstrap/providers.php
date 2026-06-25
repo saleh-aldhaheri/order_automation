@@ -8,4 +8,5 @@ return [
     AppServiceProvider::class,
     EventServiceProvider::class,
     HorizonServiceProvider::class,
+    Bugsnag\BugsnagLaravel\BugsnagServiceProvider::class,
 ];

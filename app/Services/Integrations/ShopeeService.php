@@ -8,6 +8,7 @@ use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Enums\OrderStatusEnum;
+use App\Enums\PackageStatusEnum;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\PackageData;
 use App\Enums\ShopsEnum;
@@ -277,6 +278,7 @@ class ShopeeService implements ShopContract
                 externalOrderId: $order->orderSn,
                 shopType: ShopsEnum::SHOPEE,
                 externalPackageStatus: (string) $package->logisticsStatus,
+                packageStatus: PackageStatusEnum::fromShopee((string) $package->logisticsStatus)->value,
                 details: $package->toArray(),
             ))
             ->all();
