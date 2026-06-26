@@ -2,15 +2,16 @@
 
 namespace App\Services;
 
+use App\Adapters\Contracts\ShopAdapterContract;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Jobs\Integrations\RefreshShopTokenJob;
 use App\Models\Shop;
-use App\Services\Integrations\Contracts\ShopContract;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class ShopService
 {
-    private  ShopContract $shopService;
+    private  ShopAdapterContract $shopService;
     private Shop $shop;
 
     public function setShop(Shop $shop): self
@@ -20,6 +21,19 @@ class ShopService
         $this->shopService = $shop->shop_type->service()::make($shop);
 
         return $this;
+    }
+
+    public function getShops(int $perPage, ?string $search = null): LengthAwarePaginator
+    {
+        return Shop::withCount('orders')
+            ->search($search)
+            ->paginate(perPage: $perPage <= 25 ? $perPage : 25)
+            ->withQueryString();
+    }
+
+    public function getShop(Shop $shop): Shop
+    {
+        return $shop->loadCount('orders');
     }
 
     /**

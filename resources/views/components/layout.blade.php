@@ -213,6 +213,20 @@
                 </div>
 
                 <nav class="flex flex-1 flex-col gap-1 overflow-y-auto pr-2 text-sm font-medium" aria-label="{{ __('Main') }}">
+                    @can(\App\Enums\PermissionsEnum::PERMISSION_VIEW->value)
+                        <a
+                            href="{{ route('permissions.index') }}"
+                            @class([
+                                'flex items-center gap-3 border-l-4 py-3 transition-all duration-200',
+                                'rounded-r-full bg-primary/10 pl-5 pr-4 font-medium text-primary border-primary' => request()->routeIs('permissions.*'),
+                                'border-transparent pl-6 pr-4 text-on-surface-variant hover:bg-surface-container-high' => ! request()->routeIs('permissions.*'),
+                            ])
+                            :class="desktopCollapsed ? 'lg:justify-center lg:border-l-0 lg:px-2 lg:rounded-xl' : ''"
+                        >
+                            <x-lumina.icon name="verified_user" :filled="request()->routeIs('permissions.*')" />
+                            <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Permissions') }}</span>
+                        </a>
+                    @endcan
                     @can(\App\Enums\PermissionsEnum::ROLE_VIEW->value)
                         <a
                             href="{{ route('roles.index') }}"
@@ -241,18 +255,46 @@
                             <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Users') }}</span>
                         </a>
                     @endcan
-                    @can(\App\Enums\PermissionsEnum::PERMISSION_VIEW->value)
+                    @can(\App\Enums\PermissionsEnum::SHOP_VIEW->value)
                         <a
-                            href="{{ route('permissions.index') }}"
+                            href="{{ route('shops.index') }}"
                             @class([
                                 'flex items-center gap-3 border-l-4 py-3 transition-all duration-200',
-                                'rounded-r-full bg-primary/10 pl-5 pr-4 font-medium text-primary border-primary' => request()->routeIs('permissions.*'),
-                                'border-transparent pl-6 pr-4 text-on-surface-variant hover:bg-surface-container-high' => ! request()->routeIs('permissions.*'),
+                                'rounded-r-full bg-primary/10 pl-5 pr-4 font-medium text-primary border-primary' => request()->routeIs('shops.*'),
+                                'border-transparent pl-6 pr-4 text-on-surface-variant hover:bg-surface-container-high' => ! request()->routeIs('shops.*'),
                             ])
                             :class="desktopCollapsed ? 'lg:justify-center lg:border-l-0 lg:px-2 lg:rounded-xl' : ''"
                         >
-                            <x-lumina.icon name="verified_user" :filled="request()->routeIs('permissions.*')" />
-                            <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Permissions') }}</span>
+                            <x-lumina.icon name="storefront" :filled="request()->routeIs('shops.*')" />
+                            <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Shops') }}</span>
+                        </a>
+                    @endcan
+                    @can(\App\Enums\PermissionsEnum::ORDER_VIEW->value)
+                        <a
+                            href="{{ route('orders.index') }}"
+                            @class([
+                                'flex items-center gap-3 border-l-4 py-3 transition-all duration-200',
+                                'rounded-r-full bg-primary/10 pl-5 pr-4 font-medium text-primary border-primary' => request()->routeIs('orders.*'),
+                                'border-transparent pl-6 pr-4 text-on-surface-variant hover:bg-surface-container-high' => ! request()->routeIs('orders.*'),
+                            ])
+                            :class="desktopCollapsed ? 'lg:justify-center lg:border-l-0 lg:px-2 lg:rounded-xl' : ''"
+                        >
+                            <x-lumina.icon name="receipt_long" :filled="request()->routeIs('orders.*')" />
+                            <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Orders') }}</span>
+                        </a>
+                    @endcan
+                    @can(\App\Enums\PermissionsEnum::PACKAGE_VIEW->value)
+                        <a
+                            href="{{ route('packages.index') }}"
+                            @class([
+                                'flex items-center gap-3 border-l-4 py-3 transition-all duration-200',
+                                'rounded-r-full bg-primary/10 pl-5 pr-4 font-medium text-primary border-primary' => request()->routeIs('packages.*'),
+                                'border-transparent pl-6 pr-4 text-on-surface-variant hover:bg-surface-container-high' => ! request()->routeIs('packages.*'),
+                            ])
+                            :class="desktopCollapsed ? 'lg:justify-center lg:border-l-0 lg:px-2 lg:rounded-xl' : ''"
+                        >
+                            <x-lumina.icon name="inventory_2" :filled="request()->routeIs('packages.*')" />
+                            <span class="truncate max-lg:inline" x-show="!desktopCollapsed" x-cloak>{{ __('Packages') }}</span>
                         </a>
                     @endcan
                     @can(\App\Enums\PermissionsEnum::EXTERNAL_SYSTEM_VIEW->value)
@@ -451,16 +493,27 @@
                             @if (auth()->user()->hasVerifiedEmail())
                                 <nav class="flex flex-wrap items-center gap-x-1 gap-y-2 text-sm font-medium" aria-label="{{ __('Main') }}">
                                     <a href="{{ route('profile.edit') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Profile') }}</a>
+                                    @role(\App\Enums\RolesEnum::SUPER_ADMIN->value)
+                                        @can(\App\Enums\PermissionsEnum::PERMISSION_VIEW->value)
+                                            <a href="{{ route('permissions.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Permissions') }}</a>
+                                        @endcan
+                                    @endrole
                                     @can(\App\Enums\PermissionsEnum::ROLE_VIEW->value)
                                         <a href="{{ route('roles.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Roles') }}</a>
                                     @endcan
                                     @can(\App\Enums\PermissionsEnum::USER_VIEW->value)
                                         <a href="{{ route('users.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Users') }}</a>
                                     @endcan
-                                    @role(\App\Enums\RoleEnum::SUPER_ADMIN->value)
-                                        @can(\App\Enums\PermissionsEnum::PERMISSION_VIEW->value)
-                                            <a href="{{ route('permissions.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Permissions') }}</a>
-                                        @endcan
+                                    @can(\App\Enums\PermissionsEnum::SHOP_VIEW->value)
+                                        <a href="{{ route('shops.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Shops') }}</a>
+                                    @endcan
+                                    @can(\App\Enums\PermissionsEnum::ORDER_VIEW->value)
+                                        <a href="{{ route('orders.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Orders') }}</a>
+                                    @endcan
+                                    @can(\App\Enums\PermissionsEnum::PACKAGE_VIEW->value)
+                                        <a href="{{ route('packages.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('Packages') }}</a>
+                                    @endcan
+                                    @role(\App\Enums\RolesEnum::SUPER_ADMIN->value)
                                         @can(\App\Enums\PermissionsEnum::EXTERNAL_SYSTEM_VIEW->value)
                                             <a href="{{ route('external-systems.index') }}" class="rounded-md px-2.5 py-1.5 text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">{{ __('External systems') }}</a>
                                         @endcan

@@ -2,8 +2,8 @@
 
 namespace App\Enums;
 
+use App\Adapters\ShopeeAdapter;
 use App\Services\Integrations\Contracts\ShopContract;
-use App\Services\Integrations\ShopeeService;
 use RuntimeException;
 
 enum ShopsEnum: string
@@ -23,7 +23,7 @@ enum ShopsEnum: string
     public function service(): string
     {
         return match ($this) {
-            self::SHOPEE => ShopeeService::class,
+            self::SHOPEE => ShopeeAdapter::class,
             // self::LAZADA => LazadaService::class,
             default =>  throw new RuntimeException("shop is not supported")
         };

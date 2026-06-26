@@ -4,13 +4,26 @@ namespace App\Models;
 
 use App\Enums\OrderStatusEnum;
 use App\Enums\ShopsEnum;
+use App\Traits\SearchableTrait;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use SearchableTrait, HasFactory;
+
+    protected $searchable = [
+        'external_order_id',
+        'external_shop_id',
+        'shop_id',
+        'shop_type',
+        'external_order_status',
+        'order_status'
+    ];
+
     protected $fillable = [
         'external_order_id',
         'external_shop_id',
@@ -19,10 +32,6 @@ class Order extends Model
         'external_order_status',
         'order_status',
         'details'
-    ];
-
-    protected $hidden = [
-        'details',
     ];
 
     public $casts = [

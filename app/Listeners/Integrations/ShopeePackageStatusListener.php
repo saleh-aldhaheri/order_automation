@@ -75,8 +75,8 @@ class ShopeePackageStatusListener implements ShouldQueue
             function () use ($packageRequestData, &$order, $packageService) {
                 if (!$packageService->updatePackageStatus($packageRequestData)) {
                     $packageService->syncPackage(
-                        $packageRequestData,
                         $order,
+                        $packageRequestData,
                         fn() => $order->packages()->delete()
                     );
                 }

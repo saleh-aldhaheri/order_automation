@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ShopsEnum;
+use App\Traits\SearchableTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Shop extends Model
 {
     /** @use HasFactory<\Database\Factories\ShopFactory> */
-    use HasFactory;
+    use HasFactory, SearchableTrait;
+
+    protected $searchable = [
+        'shop_type',
+        'external_shop_id',
+    ];
 
     protected $fillable = [
         'shop_type',

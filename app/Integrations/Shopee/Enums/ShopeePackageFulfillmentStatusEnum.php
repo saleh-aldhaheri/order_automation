@@ -2,7 +2,7 @@
 
 namespace App\Integrations\Shopee\Enums;
 
-final class ShopeePackageFulfillmentStatusEnum
+enum ShopeePackageFulfillmentStatusEnum: string
 {
     public const LOGISTICS_NOT_START        = 'LOGISTICS_NOT_START';
     public const LOGISTICS_READY            = 'LOGISTICS_READY';

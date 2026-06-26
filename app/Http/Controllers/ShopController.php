@@ -15,6 +15,29 @@ class ShopController extends Controller
         public ShopService $shopService
     ) {}
 
+    public function index(Request $request)
+    {
+        [$perPage, $perPageOptions] = $this->resolvePagination($request);
+
+        $search = $this->getSearch($request);
+
+        $shops = $this->shopService->getShops($perPage, $search);
+
+        return view('shops.index', [
+            'shops' => $shops,
+            'perPage' => $perPage,
+            'perPageOptions' => $perPageOptions,
+            'search' => $search ?? '',
+        ]);
+    }
+
+    public function show(Shop $shop)
+    {
+        return view('shops.view', [
+            'shop' => $this->shopService->getShop($shop),
+        ]);
+    }
+
     public function redirect(string $type)
     {
         $url = $this->shopAuthService

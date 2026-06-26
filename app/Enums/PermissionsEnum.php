@@ -22,6 +22,10 @@ enum PermissionsEnum: string
     case PERMISSION_UPDATE = 'permission:update';
     case PERMISSION_DELETE = 'permission:delete';
 
+    case ORDER_VIEW =  'order:view';
+
+    case PACKAGE_VIEW = 'package:view';
+
     case SHOP_VIEW = 'shop:view';
     case SHOP_CONNECT = 'shop:connect';
     case SHOP_REFRESH = 'shop:refresh';
@@ -41,4 +45,3 @@ enum PermissionsEnum: string
         return 'permission:' . $this->value;
     }
 }
- 

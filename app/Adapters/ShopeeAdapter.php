@@ -1,27 +1,43 @@
 <?php
 
-namespace App\Services\Integrations;
+namespace App\Adapters;
 
+use App\Adapters\Contracts\ShopAdapterContract;
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
+use App\Data\Integrations\Requests\ShipPackageRequestData;
 use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
+use App\Data\Integrations\Responses\DropoffBranchOption;
+use App\Data\Integrations\Responses\PickupAddressOption;
+use App\Data\Integrations\Responses\PickupTimeSlotOption;
+use App\Data\Integrations\Responses\ShippingMethodOption;
+use App\Data\Integrations\Responses\ShippingOptionsResponse;
 use App\Enums\OrderStatusEnum;
 use App\Enums\PackageStatusEnum;
+use App\Enums\ShippingInputEnum;
+use App\Enums\ShippingMethodEnum;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\PackageData;
 use App\Enums\ShopsEnum;
+use App\Integrations\Shopee\Data\GetShippingParameterData;
+use App\Integrations\Shopee\Data\ShippingAddressData;
+use App\Integrations\Shopee\Data\ShippingBranchData;
+use App\Integrations\Shopee\Data\ShippingTimeSlotData;
+use App\Integrations\Shopee\Data\ShipOrderDropoffData;
+use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
+use App\Integrations\Shopee\Data\ShipOrderPickupData;
 use App\Integrations\Shopee\Data\RefreshAccessTokenData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
+use App\Integrations\Shopee\Enums\ShopeePackageFulfillmentStatusEnum;
 use App\Integrations\Shopee\ShopeeClient;
+use App\Models\Package;
 use App\Models\Shop;
-use App\Services\Integrations\Contracts\ShopContract;
 use Illuminate\Support\Collection;
-use Override;
 use RuntimeException;
 
-class ShopeeService implements ShopContract
+class ShopeeAdapter implements ShopAdapterContract
 {
     private ShopeeClient $connector;
 
@@ -282,5 +298,169 @@ class ShopeeService implements ShopContract
                 details: $package->toArray(),
             ))
             ->all();
+    }
+
+    /**
+     * Fetch a package's shipping options and translate Shopee's
+     * get_shipping_parameter payload into the app's neutral DTO.
+     */
+    public function getShippingOptions(Package $package): ShippingOptionsResponse
+    {
+        // Shopee only exposes shipping parameters while the parcel can still be
+        // arranged; this eligibility rule is Shopee-specific, so it lives here.
+        $shippableStatuses = [
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_READY,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_PICKUP_RETRY,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_REQUEST_CREATED,
+        ];
+
+        if (! in_array($package->external_package_status, $shippableStatuses, true)) {
+            throw new RuntimeException(
+                "Shopee shipping options unavailable for package status: {$package->external_package_status}"
+            );
+        }
+
+        $params = $this->connector
+            ->logistic()
+            ->getShippingParameter($package->external_order_id, $package->external_package_id);
+
+        return $this->toShippingOptionsResponse($package, $params);
+    }
+
+    /**
+     * Translate Shopee's get_shipping_parameter `response` into the neutral
+     * {@see ShippingOptionsResponse}. Only the methods Shopee marks supported in
+     * `info_needed` are emitted; the seller picks one of them.
+     */
+    private function toShippingOptionsResponse(
+        Package $package,
+        GetShippingParameterData $params
+    ): ShippingOptionsResponse {
+        $info = $params->infoNeeded;
+        $methods = [];
+
+        if (! empty($info?->pickup)) {
+            $methods[] = new ShippingMethodOption(
+                method: ShippingMethodEnum::PICKUP,
+                requiredInputs: $this->mapRequiredInputs($info->pickup),
+                addresses: collect($params->pickup?->addressList ?? [])
+                    ->map(fn(ShippingAddressData $address) => new PickupAddressOption(
+                        id: (string) $address->addressId,
+                        address: $address->address,
+                        region: $address->region,
+                        state: $address->state,
+                        city: $address->city,
+                        zipcode: $address->zipcode,
+                        timeSlots: collect($address->timeSlotList ?? [])
+                            ->map(fn(ShippingTimeSlotData $slot) => new PickupTimeSlotOption(
+                                id: (string) $slot->pickupTimeId,
+                                date: $slot->date,
+                                label: $slot->timeText,
+                                recommended: in_array('recommended', $slot->flags ?? [], true),
+                            ))
+                            ->all(),
+                    ))
+                    ->all(),
+            );
+        }
+
+        if (! empty($info?->dropoff)) {
+            $methods[] = new ShippingMethodOption(
+                method: ShippingMethodEnum::DROPOFF,
+                requiredInputs: $this->mapRequiredInputs($info->dropoff),
+                branches: collect($params->dropoff?->branchList ?? [])
+                    ->map(fn(ShippingBranchData $branch) => new DropoffBranchOption(
+                        id: (string) $branch->branchId,
+                        address: $branch->address,
+                        region: $branch->region,
+                        state: $branch->state,
+                        city: $branch->city,
+                        zipcode: $branch->zipcode,
+                    ))
+                    ->all(),
+            );
+        }
+
+        if (! empty($info?->nonIntegrated)) {
+            $methods[] = new ShippingMethodOption(
+                method: ShippingMethodEnum::NON_INTEGRATED,
+                requiredInputs: $this->mapRequiredInputs($info->nonIntegrated),
+            );
+        }
+
+        return new ShippingOptionsResponse(
+            externalOrderId: $package->external_order_id,
+            externalPackageId: $package->external_package_id,
+            shopType: ShopsEnum::SHOPEE,
+            methods: $methods,
+        );
+    }
+
+    /**
+     * Map Shopee's `info_needed` field names onto the app's neutral input enum.
+     * Unknown fields are dropped.
+     *
+     * @param  array<int, string>  $fields
+     * @return array<int, ShippingInputEnum>
+     */
+    private function mapRequiredInputs(array $fields): array
+    {
+        return collect($fields)
+            ->map(fn(string $field) => match ($field) {
+                'address_id'                       => ShippingInputEnum::PICKUP_ADDRESS,
+                'pickup_time_id'                   => ShippingInputEnum::PICKUP_TIME,
+                'branch_id'                        => ShippingInputEnum::DROPOFF_BRANCH,
+                'tracking_no', 'tracking_number'   => ShippingInputEnum::TRACKING_NUMBER,
+                'sender_real_name'                 => ShippingInputEnum::SENDER_NAME,
+                default                            => null,
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function shipPackage(ShipPackageRequestData $data): bool
+    {
+        $package = $data->package;
+
+        $pickup = $dropoff = $nonIntegrated = null;
+
+        match ($data->method) {
+            ShippingMethodEnum::PICKUP => $pickup = new ShipOrderPickupData(
+                addressId: (int) $data->pickupAddressId,
+                pickupTimeId: $data->pickupTimeId,
+                trackingNumber: $data->trackingNumber,
+            ),
+            ShippingMethodEnum::DROPOFF => $dropoff = new ShipOrderDropoffData(
+                branchId: $data->dropoffBranchId !== null ? (int) $data->dropoffBranchId : null,
+                senderRealName: $data->senderName,
+                trackingNumber: $data->trackingNumber,
+            ),
+            ShippingMethodEnum::NON_INTEGRATED => $nonIntegrated = new ShipOrderNonIntegratedData(
+                trackingNumber: $data->trackingNumber,
+            ),
+        };
+
+        return $this->connector
+            ->logistic()
+            ->shipOrder(
+                $package->external_order_id,
+                $package->external_package_id,
+                $pickup,
+                $dropoff,
+                $nonIntegrated,
+            );
+    }
+
+    public function getTrackingNumber(Package $package): ?string
+    {
+        $tracking = $this->connector
+            ->logistic()
+            ->getTrackingNumber(
+                $package->external_order_id,
+                $package->external_package_id,
+            );
+
+        return $tracking->trackingNumber ?: null;
     }
 }

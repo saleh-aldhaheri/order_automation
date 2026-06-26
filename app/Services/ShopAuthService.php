@@ -5,13 +5,13 @@ namespace App\Services;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Enums\ShopsEnum;
-use App\Services\Integrations\Contracts\ShopContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use App\Adapters\Contracts\ShopAdapterContract;
 
 class ShopAuthService
 {
-    /** @var class-string<ShopContract> */
+    /** @var class-string<ShopAdapterContract> */
     private string $shopService;
 
     public function setShop(ShopsEnum $shopType): self

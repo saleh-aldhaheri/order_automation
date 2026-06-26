@@ -1,16 +1,19 @@
 <?php
 
-namespace App\Services\Integrations\Contracts;
+namespace App\Adapters\Contracts;
 
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
+use App\Data\Integrations\Requests\ShipPackageRequestData;
 use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
+use App\Data\Integrations\Responses\ShippingOptionsResponse;
+use App\Models\Package;
 use App\Models\Shop;
 use Illuminate\Support\Collection;
 
-interface ShopContract
+interface ShopAdapterContract
 {
     /**
      * Factory for a shop-bound service instance.
@@ -48,4 +51,26 @@ interface ShopContract
      * @return \Illuminate\Support\Collection<int, PackageResponse>
      */
     public function getOrderPackages(GetOrderRequestData $data): Collection;
+
+    /**
+     * Fetch the shipping options for a single package, as a neutral DTO.
+     *
+     * Each marketplace translates its own "shipping parameter" payload into the
+     * vendor-agnostic {@see ShippingOptionsResponse} so callers stay marketplace-blind.
+     */
+    public function getShippingOptions(Package $package): ShippingOptionsResponse;
+
+    /**
+     * Arrange shipment for a package from the seller's neutral selection.
+     * Returns true on success.
+     */
+    public function shipPackage(ShipPackageRequestData $data): bool;
+
+    /**
+     * Fetch a parcel's tracking number from the marketplace.
+     *
+     * Returns null when the 3PL hasn't assigned one yet (the caller should retry
+     * Keep pooling to get the tracking number
+     */
+    public function getTrackingNumber(Package $package): ?string;
 }

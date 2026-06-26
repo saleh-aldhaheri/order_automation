@@ -3,12 +3,24 @@
 namespace App\Models;
 
 use App\Enums\ShopsEnum;
+use App\Traits\SearchableTrait;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Package extends Model
 {
+    use HasFactory, SearchableTrait;
+
+    protected $searchable = [
+        'external_package_id',
+        'external_order_id',
+        'shop_type',
+        'external_package_status',
+        'package_status',
+    ];
+
     protected $fillable = [
         'external_package_id',
         'external_order_id',

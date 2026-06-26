@@ -6,6 +6,8 @@ use App\Enums\RolesEnum;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ExternalSystemController;
+use App\Http\Controllers\Web\OrderController;
+use App\Http\Controllers\Web\PackageController;
 use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\RoleController;
@@ -131,5 +133,25 @@ Route::middleware('auth')
                         ->name('refresh');
                 })
                 ->whereIn('type', array_column(ShopsEnum::cases(), 'value'));
+
+            Route::resource('shops', ShopController::class)
+                ->only(['index', 'show'])
+                ->middleware(PermissionsEnum::SHOP_VIEW->middleware());
+
+            Route::resource('orders', OrderController::class)
+                ->only(['index', 'show'])
+                ->middleware(PermissionsEnum::ORDER_VIEW->middleware());
+
+            Route::post('orders/{order}/sync', [OrderController::class, 'syncStatus'])
+                ->name('orders.sync')
+                ->middleware(PermissionsEnum::ORDER_VIEW->middleware());
+
+            Route::resource('packages', PackageController::class)
+                ->only(['index', 'show'])
+                ->middleware(PermissionsEnum::PACKAGE_VIEW->middleware());
+
+            Route::post('packages/{package}/sync', [PackageController::class, 'sync'])
+                ->name('packages.sync')
+                ->middleware(PermissionsEnum::PACKAGE_VIEW->middleware());
         });
     });
