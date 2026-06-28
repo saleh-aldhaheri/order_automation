@@ -38,10 +38,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
 
         $exceptions->reportable(function (Throwable $e) {
+
+            Log::error("Error: ", ["error" =>  $e->getMessage()]);
+
             if (app()->bound('bugsnag')) {
                 Bugsnag::notifyException($e);
             }
         });
+
         $exceptions->renderable(function (\App\Integrations\Shopee\Exceptions\ShopeeException $e) {
             Log::error("Shopee error: ", ["error" =>  $e->getMessage()]);
             return redirect()

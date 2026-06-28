@@ -38,12 +38,8 @@ class OrderController extends Controller
 
     public function syncStatus(Order $order)
     {
-        try {
-            $this->orderService->setShop($order->shop)->syncOrderStatus($order);
+        $this->orderService->setShop($order->shop)->syncOrderStatus($order);
 
-            return back()->with('success', __('Order status synced from the marketplace.'));
-        } catch (\Throwable $e) {
-            return back()->with('error', __('Failed to sync order status: ') . $e->getMessage());
-        }
+        return back()->with('success', __('Order status synced from the marketplace.'));
     }
 }

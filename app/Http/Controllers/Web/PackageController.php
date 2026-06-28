@@ -39,12 +39,9 @@ class PackageController extends Controller
 
     public function sync(Package $package)
     {
-        try {
-            $this->packageService->syncFromMarketplace($package);
+        $this->packageService->syncFromMarketplace($package);
 
-            return back()->with('success', __('Package synced from the marketplace.'));
-        } catch (\Throwable $e) {
-            return back()->with('error', __('Failed to sync package: ') . $e->getMessage());
-        }
+        return back()->with('success', __('Package synced from the marketplace.'));
+
     }
 }
