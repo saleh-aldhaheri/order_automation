@@ -19,7 +19,8 @@ class ShippingAddressData extends Data
      * @param  array<int, ShippingTimeSlotData>|null  $timeSlotList
      */
     public function __construct(
-        public ?int $addressId = null,
+        // The key the seller ships with — always present for a listed address.
+        public int $addressId,
         public ?string $region = null,
         public ?string $state = null,
         public ?string $city = null,

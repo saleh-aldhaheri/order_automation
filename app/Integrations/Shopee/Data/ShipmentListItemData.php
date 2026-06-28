@@ -16,6 +16,7 @@ class ShipmentListItemData extends Data
 {
     public function __construct(
         public string $orderSn,
-        public ?string $packageNumber = null,
+        // Always returned by get_shipment_list — the parcel linking key.
+        public string $packageNumber,
     ) {}
 }

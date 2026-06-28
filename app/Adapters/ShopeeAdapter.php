@@ -170,12 +170,8 @@ class ShopeeAdapter implements ShopAdapterContract
                 $externalShopId,
                 $idType
             );
-
-        if (! empty($token->error)) {
-            throw new RuntimeException(
-                'Shopee get access token request failed: ' . ($token->message ?: $token->error)
-            );
-        }
+        // getAccessToken() already screens Shopee's error envelope and throws, so
+        // $token here is guaranteed to be a successful exchange with tokens set.
 
         $authConfiguration = [
             'auth' => [

@@ -4,9 +4,10 @@ namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\SplitOrderData;
 use App\Integrations\Shopee\Data\SplitOrderPackageData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -17,7 +18,7 @@ use Saloon\Traits\Body\HasJsonBody;
  * max parcels 30 (TW) / 5 (other); same item+model can't be split unless
  * whitelisted; needs split permission.
  */
-class SplitOrder extends Request
+class SplitOrder extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -47,12 +48,12 @@ class SplitOrder extends Request
         ];
     }
 
-    public function createDtoFromResponse(Response $response): SplitOrderData
+    public function toDto(Response $response): SplitOrderData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return SplitOrderData::from(data_get($json, 'response', []));

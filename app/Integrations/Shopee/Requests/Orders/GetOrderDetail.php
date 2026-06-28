@@ -4,12 +4,12 @@ namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Illuminate\Support\Collection;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-class GetOrderDetail extends Request
+class GetOrderDetail extends ShopeeRequest
 {
     protected Method $method = Method::GET;
 
@@ -85,7 +85,7 @@ class GetOrderDetail extends Request
      *
      * @return \Illuminate\Support\Collection<int, GetOrderDetailsData>
      */
-    public function createDtoFromResponse(Response $response): Collection
+    public function toDto(Response $response): Collection
     {
         $json = $response->json();
 

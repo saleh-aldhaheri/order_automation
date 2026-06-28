@@ -17,7 +17,9 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 class GetShippingParameterData extends Data
 {
     public function __construct(
-        public ?ShippingInfoNeededData $infoNeeded = null,
+        // Always returned on success — it's the map of which methods are supported.
+        public ShippingInfoNeededData $infoNeeded,
+        // Conditional: only present when that method is actually supported.
         public ?ShippingDropoffData $dropoff = null,
         public ?ShippingPickupData $pickup = null,
     ) {}

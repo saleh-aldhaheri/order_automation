@@ -13,19 +13,28 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  * happens in {@see \App\Services\Integrations\ShopeeService}.
  *
  * On error Shopee still returns 200 with a non-empty `error` and empty token
- * fields, so every property is nullable.
+ * fields. That error envelope is screened in
+ * {@see \App\Integrations\Shopee\Resources\Authorization::refreshAccessToken()}
+ * BEFORE this DTO is hydrated, so this DTO only ever models a *successful*
+ * refresh: the token fields below are required (their absence is a real bug,
+ * not a valid state). Only the grant-dependent ids stay nullable.
  */
 #[MapName(SnakeCaseMapper::class)]
 class RefreshAccessTokenData extends Data
 {
     /**
-     * @param  array<int, int>|null  $supplierIdList   present when auth_type=supplier
-     * @param  array<int, int>|null  $userIdList       present when auth_type=user
+     * @param  string                $accessToken    required on success
+     * @param  string                $refreshToken   required on success
+     * @param  int                   $expireIn       required on success (seconds)
+     * @param  int|null              $shopId         present when refreshing a shop_id grant
+     * @param  int|null              $merchantId     present when refreshing a merchant grant
+     * @param  array<int, int>|null  $supplierIdList present when auth_type=supplier
+     * @param  array<int, int>|null  $userIdList     present when auth_type=user
      */
     public function __construct(
-        public ?string $accessToken = null,
-        public ?string $refreshToken = null,
-        public ?int $expireIn = null,
+        public string $accessToken,
+        public string $refreshToken,
+        public int $expireIn,
         public ?int $shopId = null,
         public ?int $merchantId = null,
         public ?int $partnerId = null,

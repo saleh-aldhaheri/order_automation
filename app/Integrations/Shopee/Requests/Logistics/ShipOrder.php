@@ -5,9 +5,10 @@ namespace App\Integrations\Shopee\Requests\Logistics;
 use App\Integrations\Shopee\Data\ShipOrderDropoffData;
 use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
 use App\Integrations\Shopee\Data\ShipOrderPickupData;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use RuntimeException;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 use stdClass;
@@ -19,7 +20,7 @@ use stdClass;
  * get_shipping_parameter's `info_needed` requires; its key is included even when
  * empty ({}). Tracking number is NOT returned here — call get_tracking_number next.
  */
-class ShipOrder extends Request
+class ShipOrder extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -62,7 +63,7 @@ class ShipOrder extends Request
         return $body;
     }
 
-    public function createDtoFromResponse(Response $response): bool
+    public function toDto(Response $response): bool
     {
         $json = $response->json();
 

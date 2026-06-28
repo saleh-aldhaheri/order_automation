@@ -3,13 +3,13 @@
 namespace App\Integrations\Shopee\Requests\Authorization;
 
 use App\Integrations\Shopee\Data\GetAccessTokenData;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
-class GetAccessToken extends Request implements HasBody
+class GetAccessToken extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -37,7 +37,7 @@ class GetAccessToken extends Request implements HasBody
         ];
     }
 
-    public function createDtoFromResponse(Response $response): GetAccessTokenData
+    public function toDto(Response $response): GetAccessTokenData
     {
         return GetAccessTokenData::from($response->json());
     }

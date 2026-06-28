@@ -3,18 +3,15 @@
 namespace App\Integrations\Shopee\Requests\Logistics;
 
 use App\Integrations\Shopee\Data\GetShippingParameterData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-class GetShippingParameter extends Request
+class GetShippingParameter extends ShopeeRequest
 {
     protected Method $method = Method::GET;
 
-    /**
-     * Create a new class instance.
-     */
     public function __construct(
         public readonly string $orderSn,
         public readonly ?string $packageNumber = null
@@ -38,12 +35,12 @@ class GetShippingParameter extends Request
         return $query;
     }
 
-    public function createDtoFromResponse(Response $response): GetShippingParameterData
+    public function toDto(Response $response): GetShippingParameterData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return GetShippingParameterData::from(data_get($json, 'response', []));

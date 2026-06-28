@@ -3,9 +3,9 @@
 namespace App\Integrations\Shopee\Requests\Logistics;
 
 use App\Integrations\Shopee\Data\GetTrackingNumberData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 
 /**
@@ -14,7 +14,7 @@ use Saloon\Http\Response;
  * The number comes from the 3PL and may not be ready yet — the response can be
  * empty. Poll every 5 min until present, or listen for order_trackingno_push.
  */
-class GetTrackingNumber extends Request
+class GetTrackingNumber extends ShopeeRequest
 {
     protected Method $method = Method::GET;
 
@@ -46,12 +46,12 @@ class GetTrackingNumber extends Request
         return $query;
     }
 
-    public function createDtoFromResponse(Response $response): GetTrackingNumberData
+    public function toDto(Response $response): GetTrackingNumberData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return GetTrackingNumberData::from(data_get($json, 'response', []));

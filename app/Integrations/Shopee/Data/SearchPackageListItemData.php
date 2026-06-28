@@ -17,7 +17,8 @@ class SearchPackageListItemData extends Data
 {
     public function __construct(
         public string $orderSn,
-        public ?string $packageNumber = null,
+        // Always returned by search_package_list — the parcel linking key.
+        public string $packageNumber,
         public ?int $logisticsChannelId = null,
         // Warehouse — pass to the mass shipping step.
         public ?string $productLocationId = null,

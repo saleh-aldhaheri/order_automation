@@ -4,12 +4,12 @@ namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\GetOrderListData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-class GetOrderList extends Request
+class GetOrderList extends ShopeeRequest
 {
 
     public Method $method = Method::GET;
@@ -59,12 +59,12 @@ class GetOrderList extends Request
         return $query;
     }
 
-    public function createDtoFromResponse(Response $response): GetOrderListData
+    public function toDto(Response $response): GetOrderListData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return GetOrderListData::from(data_get($json, 'response', []));

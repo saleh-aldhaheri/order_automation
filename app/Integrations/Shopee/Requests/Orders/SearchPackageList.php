@@ -5,9 +5,10 @@ namespace App\Integrations\Shopee\Requests\Orders;
 use App\Integrations\Shopee\Data\SearchPackageFilterData;
 use App\Integrations\Shopee\Data\SearchPackageListData;
 use App\Integrations\Shopee\Data\SearchPackageSortData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 use stdClass;
@@ -15,7 +16,7 @@ use stdClass;
 /**
  * Find packages not yet shipped (preferred over get_shipment_list), with filters.
  */
-class SearchPackageList extends Request
+class SearchPackageList extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -53,12 +54,12 @@ class SearchPackageList extends Request
     }
 
 
-    public function createDtoFromResponse(Response $response): SearchPackageListData
+    public function toDto(Response $response): SearchPackageListData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return SearchPackageListData::from(data_get($json, 'response', []));

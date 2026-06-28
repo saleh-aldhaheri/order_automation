@@ -24,8 +24,9 @@ class PackageDetailData extends Data
      */
     public function __construct(
         public string $orderSn,
-        public ?string $packageNumber = null,
-        public ?string $fulfillmentStatus = null,
+        // Always returned by get_package_detail — parcel key + its fulfillment state.
+        public string $packageNumber,
+        public string $fulfillmentStatus,
         public ?int $updateTime = null,
         public ?int $logisticsChannelId = null,
         public ?string $shippingCarrier = null,

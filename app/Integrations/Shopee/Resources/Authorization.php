@@ -3,6 +3,7 @@
 namespace App\Integrations\Shopee\Resources;
 
 use App\Integrations\Shopee\Resource;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Data\{
     GetAccessTokenData,
     RefreshAccessTokenData
@@ -19,11 +20,20 @@ class Authorization extends Resource
      */
     public function refreshAccessToken(): RefreshAccessTokenData
     {
-        return $this->connector->send(new RefreshAccessToken(
+        $response = $this->connector->send(new RefreshAccessToken(
             $this->connector->refreshToken,
             $this->connector->partnerId,
             $this->connector->shopId,
-        ))->dtoOrFail();
+        ));
+
+        //because shopee return 200 even if the refresh failed
+        if (! empty($error = $response->json('error'))) {
+            throw new ShopeeException(
+                'Shopee refresh access token failed: ' . ($response->json('message') ?: $error)
+            );
+        }
+
+        return $response->dtoOrFail();
     }
 
     /**
@@ -34,11 +44,20 @@ class Authorization extends Resource
         int|string $accountId,
         string $idType,
     ): GetAccessTokenData {
-        return $this->connector->send(new GetAccessToken(
+        $response = $this->connector->send(new GetAccessToken(
             $code,
             $this->connector->partnerId,
             $accountId,
             $idType
-        ))->dtoOrFail();
+        ));
+
+        //because shopee return 200 even if can't get the access token
+        if (! empty($error = $response->json('error'))) {
+            throw new ShopeeException(
+                'Shopee get access token failed: ' . ($response->json('message') ?: $error)
+            );
+        }
+
+        return $response->dtoOrFail();
     }
 }

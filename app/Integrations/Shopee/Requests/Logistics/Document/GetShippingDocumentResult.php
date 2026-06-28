@@ -4,10 +4,11 @@ namespace App\Integrations\Shopee\Requests\Logistics\Document;
 
 use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
 use App\Integrations\Shopee\Data\ShippingDocumentResultData;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Illuminate\Support\Collection;
-use RuntimeException;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -17,7 +18,7 @@ use Saloon\Traits\Body\HasJsonBody;
  * Status may be PROCESSING: poll until READY (or FAILED), or listen for the
  * shipping_document_status_push (code 15) webhook. Runs per package for splits.
  */
-class GetShippingDocumentResult extends Request
+class GetShippingDocumentResult extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -48,12 +49,12 @@ class GetShippingDocumentResult extends Request
         ];
     }
 
-    public function createDtoFromResponse(Response $response): Collection
+    public function toDto(Response $response): Collection
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         $results = data_get($json, 'response.result_list', []);

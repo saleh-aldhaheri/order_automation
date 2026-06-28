@@ -4,10 +4,11 @@ namespace App\Integrations\Shopee\Requests\Logistics\Document;
 
 use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
 use App\Integrations\Shopee\Data\CreateShippingDocumentResultData;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Illuminate\Support\Collection;
-use RuntimeException;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -15,7 +16,7 @@ use Saloon\Traits\Body\HasJsonBody;
  * Start the AWB (waybill) task. Only after a tracking number exists, and before
  * LOGISTICS_PICKUP_DONE. Runs per package for split orders (one entry per package).
  */
-class CreateShippingDocument extends Request
+class CreateShippingDocument extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -46,12 +47,12 @@ class CreateShippingDocument extends Request
         ];
     }
 
-    public function createDtoFromResponse(Response $response): Collection
+    public function toDto(Response $response): Collection
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         $results = data_get($json, 'response.result_list', []);

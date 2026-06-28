@@ -2,9 +2,10 @@
 
 namespace App\Integrations\Shopee\Requests\Orders;
 
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -13,7 +14,7 @@ use Saloon\Traits\Body\HasJsonBody;
  *
  * Conditions: order_status = READY_TO_SHIP (no parcel shipped).
  */
-class UnsplitOrder extends Request
+class UnsplitOrder extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -35,12 +36,12 @@ class UnsplitOrder extends Request
         ];
     }
 
-    public function createDtoFromResponse(Response $response): bool
+    public function toDto(Response $response): bool
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return true;

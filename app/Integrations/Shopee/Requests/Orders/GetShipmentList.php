@@ -3,16 +3,16 @@
 namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\GetShipmentListData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
 use Saloon\Http\Response;
 
 /***
  *  not this endpoint might get deprecated
  *  suggest to use search package list instead
  */
-class GetShipmentList extends Request
+class GetShipmentList extends ShopeeRequest
 {
     public Method $method = Method::GET;
 
@@ -44,12 +44,12 @@ class GetShipmentList extends Request
         return $query;
     }
 
-    public function createDtoFromResponse(Response $response): GetShipmentListData
+    public function toDto(Response $response): GetShipmentListData
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return GetShipmentListData::from(data_get($json, 'response', []));

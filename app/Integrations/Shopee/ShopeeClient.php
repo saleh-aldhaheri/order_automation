@@ -95,7 +95,7 @@ class ShopeeClient extends Connector
                 $e,
             ),
         );
-        
+
         $pendingRequest->query()->merge($query);
     }
 
@@ -129,6 +129,7 @@ class ShopeeClient extends Connector
             "Shopee API request failed [{$response->status()}]: {$response->body()}",
             $response->status(),
             $senderException,
+            $response,
         );
     }
 

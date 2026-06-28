@@ -13,7 +13,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 class ShippingBranchData extends Data
 {
     public function __construct(
-        public ?int $branchId = null,
+        // The key the seller ships with — always present for a listed branch.
+        public int $branchId,
         public ?string $region = null,
         public ?string $state = null,
         public ?string $city = null,

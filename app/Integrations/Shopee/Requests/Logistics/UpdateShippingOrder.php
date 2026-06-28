@@ -3,9 +3,10 @@
 namespace App\Integrations\Shopee\Requests\Logistics;
 
 use App\Integrations\Shopee\Data\UpdateShippingPickupData;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -16,7 +17,7 @@ use Saloon\Traits\Body\HasJsonBody;
  * LOGISTICS_REQUEST_CREATED + Instant Order Reschedule. Use when pickup
  * was wrong or failed.
  */
-class UpdateShippingOrder extends Request
+class UpdateShippingOrder extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -47,12 +48,12 @@ class UpdateShippingOrder extends Request
         return $body;
     }
 
-    public function createDtoFromResponse(Response $response): bool
+    public function toDto(Response $response): bool
     {
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         return true;

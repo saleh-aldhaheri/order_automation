@@ -14,7 +14,8 @@ class PackageData extends Data
      * @param  array<int, PackageItemData>|null  $itemList
      */
     public function __construct(
-        public ?string $packageNumber = null,
+        // The parcel linking key — always present in an order's package_list.
+        public string $packageNumber,
         public ?string $logisticsStatus = null,
         public ?int $logisticsChannelId = null,
         public ?string $shippingCarrier = null,

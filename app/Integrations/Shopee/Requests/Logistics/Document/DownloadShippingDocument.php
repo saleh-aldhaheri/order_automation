@@ -4,9 +4,10 @@ namespace App\Integrations\Shopee\Requests\Logistics\Document;
 
 use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
-use RuntimeException;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Enums\Method;
-use Saloon\Http\Request;
+use Saloon\Contracts\Body\HasBody;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -18,7 +19,7 @@ use Saloon\Traits\Body\HasJsonBody;
  * { error, message, request_id }. `shippingDocumentType` is a top-level param
  * (same type used at create), NOT per order entry.
  */
-class DownloadShippingDocument extends Request
+class DownloadShippingDocument extends ShopeeRequest implements HasBody
 {
     use HasJsonBody;
 
@@ -57,14 +58,14 @@ class DownloadShippingDocument extends Request
         return $body;
     }
 
-    public function createDtoFromResponse(Response $response): string
+    public function toDto(Response $response): string
     {
         $body = $response->body();
 
         $decoded = json_decode($body, true);
 
         if (is_array($decoded) && ! empty($decoded['error'])) {
-            throw new RuntimeException($decoded['message'] ?? $decoded['error']);
+            throw new ShopeeException($decoded['message'] ?? $decoded['error']);
         }
 
         return $body;
