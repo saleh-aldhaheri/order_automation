@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Override;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Package extends Model
+class Package extends Model implements HasMedia
 {
-    use HasFactory, SearchableTrait;
+    use HasFactory, SearchableTrait, InteractsWithMedia;
 
     protected $searchable = [
         'external_package_id',
@@ -39,6 +42,22 @@ class Package extends Model
         'details' => 'array',
         'shop_type' =>  ShopsEnum::class
     ];
+
+
+    public function registerMediaCollections(): void
+    {
+        // Waybills carry buyer PII (name, address, phone), so they must live on a
+        // PRIVATE disk — never the public, web-served one. `local` = storage/app,
+        // not reachable by URL; serve it only through an authorized download route.
+        $this->addMediaCollection('waybill')
+            ->useDisk('local')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'text/html',
+                'application/zip',
+            ])
+            ->singleFile();
+    }
 
     public function scopeGetPackage(Builder $query, string $externalPackageId, int $orderId)
     {

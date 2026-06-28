@@ -88,6 +88,7 @@ class Logistics extends Resource
      *
      * @param  array<int, \App\Integrations\Shopee\Data\ShippingDocumentOrderData>  $orderList
      * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\ShippingDocumentParameterResultData>
+     *
      */
     public function getShippingDocumentParameter(array $orderList): Collection
     {

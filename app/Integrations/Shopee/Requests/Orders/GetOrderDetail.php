@@ -3,8 +3,8 @@
 namespace App\Integrations\Shopee\Requests\Orders;
 
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
 use Illuminate\Support\Collection;
-use RuntimeException;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -90,7 +90,7 @@ class GetOrderDetail extends Request
         $json = $response->json();
 
         if (! empty($json['error'])) {
-            throw new RuntimeException($json['error']);
+            throw new ShopeeException($json['error']);
         }
 
         $orders = data_get($json, 'response.order_list', []);

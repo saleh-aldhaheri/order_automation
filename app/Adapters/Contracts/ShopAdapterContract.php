@@ -9,6 +9,9 @@ use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Data\Integrations\Responses\ShippingOptionsResponse;
+use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Data\Integrations\Responses\DocumentFileData;
+use App\Enums\DocumentStatusEnum;
 use App\Models\Package;
 use App\Models\Shop;
 use Illuminate\Support\Collection;
@@ -73,4 +76,28 @@ interface ShopAdapterContract
      * Keep pooling to get the tracking number
      */
     public function getTrackingNumber(Package $package): ?string;
+
+    /**
+     * Fetch the document/waybill types a package can generate, as a neutral DTO.
+     * The seller picks one of the returned types to feed into createDocument().
+     */
+    public function getDocumentType(Package $package): DocumentTypeOptionsResponse;
+
+    /**
+     * Ask the marketplace to start generating the document of the given type.
+     * `$documentType` is one of the values from {@see DocumentTypeOptionsResponse}.
+     * Returns true once the generation task was accepted.
+     */
+    public function createDocument(Package $package, string $documentType): bool;
+
+    /**
+     * Poll the marketplace for the document's generation status, mapped to the
+     * neutral {@see DocumentStatusEnum} (READY = downloadable).
+     */
+    public function checkDocumentStatus(Package $package): DocumentStatusEnum;
+
+    /**
+     * Download the generated document as a neutral file (raw bytes + metadata).
+     */
+    public function downloadDocument(Package $package): DocumentFileData;
 }

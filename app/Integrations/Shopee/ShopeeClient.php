@@ -2,10 +2,12 @@
 
 namespace App\Integrations\Shopee;
 
+use App\Integrations\Shopee\Exceptions\ShopeeException;
 use Closure;
-use Exception;
 use Saloon\Http\Connector;
 use Saloon\Http\PendingRequest;
+use Saloon\Http\Response;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
 use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Request;
@@ -15,10 +17,11 @@ use App\Integrations\Shopee\Resources\{
     Logistics,
     Orders
 };
+use Throwable;
 
 class ShopeeClient extends Connector
 {
-    use HasTimeout;
+    use HasTimeout, AlwaysThrowOnErrors;
 
     public ?int $tries = 3;
 
@@ -31,13 +34,13 @@ class ShopeeClient extends Connector
     public ?bool $useExponentialBackoff = true;
 
     public function __construct(
-        public readonly int $partnerId,
-        public readonly string $partnerKey,
-        public readonly string $baseUrl,
-        protected ?string $accessToken = null,
-        public readonly ?string $shopId = null,      // shop_id | merchant_id
-        public ?string $refreshToken = null,
-        private ?Closure $persistRefreshedToken =  null,
+        public readonly int    $partnerId,
+        public readonly string    $partnerKey,
+        public readonly string    $baseUrl,
+        public ?string         $accessToken = null,
+        public readonly ?string   $shopId = null,      // shop_id | merchant_id
+        public ?string            $refreshToken = null,
+        private readonly ?Closure $persistRefreshedToken =  null,
     ) {}
 
     protected function defaultHeaders(): array
@@ -59,7 +62,7 @@ class ShopeeClient extends Connector
 
         if (! $isPublic) {
             if (!$this->accessToken || !$this->shopId) {
-                throw new Exception("access token or account id missing for a shop API call");
+                throw new ShopeeException("access token or account id missing for a shop API call",401);
             }
             $base .= $this->accessToken . $this->shopId;
         }
@@ -85,6 +88,14 @@ class ShopeeClient extends Connector
 
         $query['sign'] = $this->sign($path, $timestamp, $isPublic);
 
+        $pendingRequest->middleware()->onFatalException(
+            fn (FatalRequestException $e) => throw new ShopeeException(
+                'Could not reach Shopee: ' . $e->getMessage(),
+                0,
+                $e,
+            ),
+        );
+        
         $pendingRequest->query()->merge($query);
     }
 
@@ -112,6 +123,15 @@ class ShopeeClient extends Connector
         }
     }
 
+    public function getRequestException(Response $response, ?Throwable $senderException): ?Throwable
+    {
+        return new ShopeeException(
+            "Shopee API request failed [{$response->status()}]: {$response->body()}",
+            $response->status(),
+            $senderException,
+        );
+    }
+
     public function authorization(): Authorization
     {
         return new Authorization($this);
@@ -122,7 +142,7 @@ class ShopeeClient extends Connector
         return new Orders($this);
     }
 
-    public function logistic()
+    public function logistic(): Logistics
     {
         return new Logistics($this);
     }

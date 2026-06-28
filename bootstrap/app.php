@@ -16,10 +16,10 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
-        commands: __DIR__ . '/../routes/console.php',
         api: __DIR__ . '/../routes/api.php',
-        apiPrefix: 'api/',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        apiPrefix: 'api/',
         then: function () {
             Route::prefix('webhook')
                 ->as('webhook.')
@@ -36,9 +36,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+
         $exceptions->reportable(function (Throwable $e) {
             if (app()->bound('bugsnag')) {
                 Bugsnag::notifyException($e);
             }
+        });
+        $exceptions->renderable(function (\App\Integrations\Shopee\Exceptions\ShopeeException $e) {
+            Log::error("Shopee error: ", ["error" =>  $e->getMessage()]);
+            return redirect()
+                ->back()
+                ->with('error', 'Shopee service is temporarily unavailable. Please try again.');
         });
     })->create();

@@ -20,6 +20,7 @@
         "laravel/tinker": "^3.0",
         "saloonphp/laravel-plugin": "^4.0",
         "spatie/laravel-data": "^4.21",
+        "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-permission": "^7.2"
     },
     "require-dev": {

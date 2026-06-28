@@ -7,6 +7,8 @@ use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\ShipPackageRequestData;
 use App\Data\Integrations\Requests\SyncPackageRequestData;
 use App\Data\Integrations\Responses\ShippingOptionsResponse;
+use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Enums\GenerateDocumentEnum;
 use App\Enums\OrderArrangementStepsEnum;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use App\Enums\DocumentStatusEnum;
 
 class PackageService
 {
@@ -186,5 +189,85 @@ class PackageService
         $package->save();
 
         return $trackingNumber;
+    }
+
+    public function createDocumentFlow(
+        GenerateDocumentEnum $step,
+        Package $package,
+        string $documentType
+    ) {
+        $trackingNumber = data_get($package->details, 'tracking_number');
+
+        if (! $trackingNumber) {
+            throw new RuntimeException('please make sure to fetch the tracking number first');
+        }
+
+        $allowed = [PackageStatusEnum::READY->value, PackageStatusEnum::SHIPPED->value];
+
+        if (! in_array($package->package_status, $allowed, true)) {
+            throw new RuntimeException('the package is not in a state to download the document');
+        }
+
+        if ($package->hasMedia('waybill')) {
+            throw new RuntimeException('package already has a document');
+        }
+
+        return match ($step) {
+            GenerateDocumentEnum::DOCUMENT_TYPE => $this->getDocumentType($package),
+            GenerateDocumentEnum::CREATE_DOCUMENT => $this->createDocument($package, $documentType),
+            default => throw new RuntimeException("step '{$step->value}' is not supported in the document flow"),
+        };
+    }
+
+    public function getDocumentType(Package $package): DocumentTypeOptionsResponse
+    {
+        return $this->shopService->getDocumentType($package);
+    }
+
+    public function createDocument(Package $package, string $documentType): bool
+    {
+        $created = $this->shopService->createDocument($package, $documentType);
+
+        if (! $created) {
+            return false;
+        }
+
+        $details = $package->details ?? [];
+        $details['doc_info']['type'] = $documentType;
+
+        $package->details = $details;
+        $package->save();
+
+        return true;
+    }
+
+    public function checkDocumentStatus(Package $package): DocumentStatusEnum
+    {
+        $status = $this->shopService->checkDocumentStatus($package);
+
+        $details = $package->details;
+        $details['doc_info']['status'] = $status->value;
+        $package->details = $details;
+
+        return $status;
+    }
+
+
+    public function storeDocument(Package $package): bool
+    {
+        $status = data_get($package->details, 'doc_info.status');
+
+        if ($status !== DocumentStatusEnum::READY->value) {
+            return false;
+        }
+
+        $document = $this->shopService->downloadDocument($package);
+
+        $package
+            ->addMediaFromString($document->content)
+            ->usingFileName($document->fileName)
+            ->toMediaCollection('waybill');
+
+        return true;
     }
 }

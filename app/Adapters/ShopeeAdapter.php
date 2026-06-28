@@ -14,6 +14,10 @@ use App\Data\Integrations\Responses\PickupAddressOption;
 use App\Data\Integrations\Responses\PickupTimeSlotOption;
 use App\Data\Integrations\Responses\ShippingMethodOption;
 use App\Data\Integrations\Responses\ShippingOptionsResponse;
+use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Data\Integrations\Responses\DocumentFileData;
+use App\Enums\DocumentStatusEnum;
+use App\Integrations\Shopee\Enums\ShopeeDocumentStatus;
 use App\Enums\OrderStatusEnum;
 use App\Enums\PackageStatusEnum;
 use App\Enums\ShippingInputEnum;
@@ -21,6 +25,8 @@ use App\Enums\ShippingMethodEnum;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\PackageData;
 use App\Enums\ShopsEnum;
+use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
 use App\Integrations\Shopee\Data\GetShippingParameterData;
 use App\Integrations\Shopee\Data\ShippingAddressData;
 use App\Integrations\Shopee\Data\ShippingBranchData;
@@ -29,8 +35,10 @@ use App\Integrations\Shopee\Data\ShipOrderDropoffData;
 use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
 use App\Integrations\Shopee\Data\ShipOrderPickupData;
 use App\Integrations\Shopee\Data\RefreshAccessTokenData;
+use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
 use App\Integrations\Shopee\Enums\ShopeePackageFulfillmentStatusEnum;
+use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 use App\Integrations\Shopee\ShopeeClient;
 use App\Models\Package;
 use App\Models\Shop;
@@ -39,7 +47,7 @@ use RuntimeException;
 
 class ShopeeAdapter implements ShopAdapterContract
 {
-    private ShopeeClient $connector;
+    private ShopeeClient $client;
 
     /**
      * Create a new class instance.
@@ -53,7 +61,7 @@ class ShopeeAdapter implements ShopAdapterContract
         public readonly ?string $externalShopId = null,
         public ?string $refreshToken = null,
     ) {
-        $this->connector = new ShopeeClient(
+        $this->client = new ShopeeClient(
             $this->partnerId,
             $this->partnerKey,
             $this->baseUrl,
@@ -86,7 +94,7 @@ class ShopeeAdapter implements ShopAdapterContract
 
         return new self(
             $shop,
-            partnerId: config('services.shopee.partner_id'),
+            partnerId: (int) config('services.shopee.partner_id'),
             partnerKey: config('services.shopee.partner_key'),
             baseUrl: config('services.shopee.base_url'),
             accessToken: data_get($config, 'auth.access_token.token'),
@@ -209,7 +217,7 @@ class ShopeeAdapter implements ShopAdapterContract
      */
     public function refreshAuthConfiguration(): array
     {
-        $token = $this->connector
+        $token = $this->client
             ->authorization()
             ->refreshAccessToken();
 
@@ -242,7 +250,7 @@ class ShopeeAdapter implements ShopAdapterContract
      */
     public function getOrder(GetOrderRequestData $data): Collection
     {
-        return $this->connector
+        return $this->client
             ->order()
             ->getOrderDetail($data->ordersId ?? [])
             ->map(fn(GetOrderDetailsData $order) => $this->toOrderResponse($order));
@@ -256,7 +264,7 @@ class ShopeeAdapter implements ShopAdapterContract
      */
     public function getOrderPackages(GetOrderRequestData $data): Collection
     {
-        return $this->connector
+        return $this->client
             ->order()
             ->getOrderDetail($data->ordersId ?? [])
             ->flatMap(fn(GetOrderDetailsData $order) => $this->toPackageResponses($order));
@@ -294,8 +302,8 @@ class ShopeeAdapter implements ShopAdapterContract
                 externalOrderId: $order->orderSn,
                 shopType: ShopsEnum::SHOPEE,
                 externalPackageStatus: (string) $package->logisticsStatus,
-                packageStatus: PackageStatusEnum::fromShopee((string) $package->logisticsStatus)->value,
                 details: $package->toArray(),
+                packageStatus: PackageStatusEnum::fromShopee((string) $package->logisticsStatus)->value,
             ))
             ->all();
     }
@@ -320,7 +328,7 @@ class ShopeeAdapter implements ShopAdapterContract
             );
         }
 
-        $params = $this->connector
+        $params = $this->client
             ->logistic()
             ->getShippingParameter($package->external_order_id, $package->external_package_id);
 
@@ -441,7 +449,7 @@ class ShopeeAdapter implements ShopAdapterContract
             ),
         };
 
-        return $this->connector
+        return $this->client
             ->logistic()
             ->shipOrder(
                 $package->external_order_id,
@@ -454,7 +462,7 @@ class ShopeeAdapter implements ShopAdapterContract
 
     public function getTrackingNumber(Package $package): ?string
     {
-        $tracking = $this->connector
+        $tracking = $this->client
             ->logistic()
             ->getTrackingNumber(
                 $package->external_order_id,
@@ -462,5 +470,92 @@ class ShopeeAdapter implements ShopAdapterContract
             );
 
         return $tracking->trackingNumber ?: null;
+    }
+
+    public function getDocumentType(Package $package): DocumentTypeOptionsResponse
+    {
+        // We send a single order, so we only care about the first result entry.
+        $result = $this->client->logistic()->getShippingDocumentParameter([
+            new ShippingDocumentOrderData(
+                $package->external_order_id,
+                $package->external_package_id,
+            ),
+        ])->first();
+
+        if ($result === null) {
+            throw new RuntimeException('Shopee returned no shipping-document parameters for this package');
+        }
+
+        if ($result->failError) {
+            throw new RuntimeException("Shopee shipping-document parameter failed: {$result->failError} {$result->failMessage}");
+        }
+
+        return new DocumentTypeOptionsResponse(
+            externalOrderId: $result->orderSn,
+            externalPackageId: $result->packageNumber,
+            shopType: ShopsEnum::SHOPEE,
+            suggestedType: $result->suggestShippingDocumentType,
+            selectableTypes: $result->selectableShippingDocumentType ?? [],
+        );
+    }
+
+    public function createDocument(Package $package, string $documentType): bool
+    {
+        // Use the seller's selected type, not details.doc_info.type — that is only
+        // persisted by the application *after* this call returns successfully.
+        $result = $this->client->logistic()->createShippingDocument([
+            new CreateShippingDocumentOrderData(
+                $package->external_order_id,
+                $package->external_package_id,
+                data_get($package->details, 'tracking_number'),
+                ShopeeShippingDocumentTypeEnum::from($documentType),
+            ),
+        ])->first();
+
+        if ($result?->failError) {
+            throw new RuntimeException("Shopee create-shipping-document failed: {$result->failError} {$result->failMessage}");
+        }
+
+        return $result !== null;
+    }
+
+    public function checkDocumentStatus(Package $package): DocumentStatusEnum
+    {
+        $result = $this->client->logistic()->getShippingDocumentResult([
+            new GetShippingDocumentResultOrderData(
+                $package->external_order_id,
+                $package->external_package_id,
+                ShopeeShippingDocumentTypeEnum::from(data_get($package->details, 'doc_info.type')),
+            ),
+        ])->first();
+
+        if ($result === null || $result->failError) {
+            throw new RuntimeException(
+                'Shopee shipping-document result failed: '
+                . ($result->failError ?? 'no result returned') . ' ' . ($result->failMessage ?? '')
+            );
+        }
+
+        // Shopee reports the status uppercase (READY / PROCESSING / FAILED);
+        return DocumentStatusEnum::fromShopee(
+            ShopeeDocumentStatus::from(strtolower((string) $result->status))
+        );
+    }
+
+    public function downloadDocument(Package $package): DocumentFileData
+    {
+        $content = $this->client->logistic()->downloadShippingDocument(
+            [new ShippingDocumentOrderData(
+                $package->external_order_id,
+                $package->external_package_id,
+            )],
+            ShopeeShippingDocumentTypeEnum::from(data_get($package->details, 'doc_info.type')),
+        );
+
+        return new DocumentFileData(
+            content: $content,
+            mimeType: 'application/pdf',
+            fileName: 'waybill-' . $package->external_package_id . '.pdf',
+        );
     }
 }
