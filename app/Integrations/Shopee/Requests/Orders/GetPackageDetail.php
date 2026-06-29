@@ -29,7 +29,7 @@ class GetPackageDetail extends ShopeeRequest
         return '/api/v2/order/get_package_detail';
     }
 
-    protected function defaultQuery(): array
+    public function defaultQuery(): array
     {
         return [
             'package_number_list' => implode(',', $this->packageNumberList),

@@ -40,6 +40,10 @@ class GetOrderList extends ShopeeRequest
             'page_size' => $this->pageSize,
         ];
 
+        if($this->cursor) {
+            $query['cursor'] = $this->cursor;
+        }
+
         if ($this->orderStatus) {
             $query['order_status'] = $this->orderStatus->value;
         }
@@ -48,7 +52,7 @@ class GetOrderList extends ShopeeRequest
             $query['response_optional_fields'] = $this->responseOptionalFields;
         }
 
-        if ($this->requestOrderStatusPending) {
+        if ($this->requestOrderStatusPending !== null) {
             $query['request_order_status_pending'] = $this->requestOrderStatusPending;
         }
 
