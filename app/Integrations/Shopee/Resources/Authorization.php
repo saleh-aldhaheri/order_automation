@@ -41,13 +41,13 @@ class Authorization extends Resource
      */
     public function getAccessToken(
         string $code,
-        int|string $accountId,
+        int|string $shopId,
         string $idType,
     ): GetAccessTokenData {
         $response = $this->connector->send(new GetAccessToken(
             $code,
             $this->connector->partnerId,
-            $accountId,
+            $shopId,
             $idType
         ));
 

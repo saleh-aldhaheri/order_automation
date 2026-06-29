@@ -18,7 +18,7 @@ class RefreshAccessToken extends ShopeeRequest implements HasBody
 
     public function __construct(
         private readonly string $refreshToken,
-        private readonly string $partnerId,
+        private readonly int $partnerId,
         private readonly int|string $shopId,
     ) {}
 

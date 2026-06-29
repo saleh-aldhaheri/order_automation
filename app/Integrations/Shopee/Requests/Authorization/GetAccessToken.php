@@ -3,6 +3,7 @@
 namespace App\Integrations\Shopee\Requests\Authorization;
 
 use App\Integrations\Shopee\Data\GetAccessTokenData;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -39,6 +40,12 @@ class GetAccessToken extends ShopeeRequest implements HasBody
 
     public function toDto(Response $response): GetAccessTokenData
     {
-        return GetAccessTokenData::from($response->json());
+        $json = $response->json();
+
+        if (! empty($json['error'])) {
+            throw new ShopeeException($json['error']);
+        }
+
+        return GetAccessTokenData::from($json);
     }
 }
