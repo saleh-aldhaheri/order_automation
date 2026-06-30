@@ -17,9 +17,9 @@ use Tests\TestCase;
 | need to change it using the "pest()" function to bind a different classes or traits.
 |
 */
+pest()->extend(TestCase::class);
 
 pest()
-    ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
