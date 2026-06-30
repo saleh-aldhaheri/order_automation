@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Shopee\Middlewares;
 
+use App\Integrations\Shopee\Exceptions\ShopeeException;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,7 @@ class ShopeeWebhookMiddleware
         $expected = hash_hmac('sha256', $baseString, config('services.shopee.partner_key'));
 
         if (! $authorization || ! hash_equals($expected, $authorization)) {
-            abort(401, 'Invalid Shopee push signature');
+            throw new ShopeeException('Invalid Shopee push signature',401);
         }
 
         return $next($request);

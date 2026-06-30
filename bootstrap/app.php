@@ -46,8 +46,15 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->renderable(function (\App\Integrations\Shopee\Exceptions\ShopeeException $e) {
+        $exceptions->renderable(function (\App\Integrations\Shopee\Exceptions\ShopeeException $e, Request $request) {
             Log::error("Shopee error: ", ["error" =>  $e->getMessage()]);
+
+            // API / webhook callers
+            if ($request->expectsJson()) {
+                $status = ($e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
+                return response()->json(['message' => $e->getMessage()], $status);
+            }
+
             return redirect()
                 ->back()
                 ->with('error', 'Shopee service is temporarily unavailable. Please try again.');
