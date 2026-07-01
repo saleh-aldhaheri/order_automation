@@ -1,7 +1,6 @@
 name: Formatting
-
 on:
-  push: #every push
+  push:
   workflow_dispatch:
 
 permissions:
