@@ -7,15 +7,15 @@ use Exception;
 
 class ShopIntegrationException extends Exception
 {
-    private ShopsEnum $shop;
+    private string $shop;
 
-    public function __construct(ShopsEnum $shop, string $message)
+    public function __construct(?ShopsEnum $shop, string $message)
     {
-        $this->shop = $shop;
-        parent::__construct("{$shop->name} Error: $message");
+        $this->shop = $shop?->value ?? "shop";
+        parent::__construct("{$this->shop} Error: $message");
     }
 
-    public function getShop(): ShopsEnum
+    public function getShop(): string
     {
         return $this->shop;
     }

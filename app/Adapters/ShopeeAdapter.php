@@ -48,7 +48,7 @@ use Illuminate\Support\Collection;
 
 class ShopeeAdapter implements ShopAdapterContract
 {
-    private ShopeeClient $client;
+    public readonly ShopeeClient $client;
 
     /**
      * Create a new class instance.
@@ -219,19 +219,7 @@ class ShopeeAdapter implements ShopAdapterContract
             ->authorization()
             ->refreshAccessToken();
 
-        if (! empty($token->error)) {
-            throw new ShopIntegrationException(ShopsEnum::SHOPEE,
-                'Shopee refresh access token request failed: '.($token->message ?: $token->error)
-            );
-        }
-
-        if (empty($token->expireIn)) {
-            throw new ShopIntegrationException(ShopsEnum::SHOPEE, 'Shopee refresh access token response missing expire_in');
-        }
-
-        $authConfiguration = $this->getConfiguration($token);
-
-        return $authConfiguration;
+        return $this->getConfiguration($token);
     }
 
     /**
@@ -559,9 +547,9 @@ class ShopeeAdapter implements ShopAdapterContract
     {
         $authConfiguration = $this->shop->auth_configuration;
         $authConfiguration['auth']['access_token']['token'] = $refreshData->accessToken;
-        $authConfiguration['auth']['access_token']['expired_in'] = now()->addSeconds($refreshData->expireIn);
+        $authConfiguration['auth']['access_token']['expired_at'] = now()->addSeconds($refreshData->expireIn);
         $authConfiguration['auth']['refresh_token']['token'] = $refreshData->refreshToken;
-        $authConfiguration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
+        $authConfiguration['auth']['refresh_token']['expired_at'] = now()->addDays(30);
 
         return $authConfiguration;
     }

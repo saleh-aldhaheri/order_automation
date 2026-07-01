@@ -59,7 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return redirect()
                 ->back()
-                ->with('error', $e->getMessage('error', $e->getShop()->value.' service is temporarily unavailable. Please try again.'));
+                ->with('error', $e->getMessage('error', $e->getShop().' service is temporarily unavailable. Please try again.'));
         });
 
         $exceptions->renderable(function (ShopeeException $e, Request $request) {
