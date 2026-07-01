@@ -4,6 +4,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # CI only needs the container alive to `docker exec` into it. Override the
+    # Dockerfile CMD (entrypoint -> migrate -> `artisan serve`) so we don't run a
+    # dev server + boot migrations competing for memory while composer installs.
+    command: ["tail", "-f", "/dev/null"]
     environment:
       - DB_CONNECTION=${DB_CONNECTION}
       - DB_HOST=${DB_HOST}
@@ -15,15 +19,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - public:/my-app/public:rw
-      - storage:/my-app/storage:rw
     networks:
       - testing
 
   db:
     container_name: test_db
-    image: mysql:latest
+    image: mysql:8.4
+    # Trim MySQL's default memory footprint (perf schema + buffer pool) so the
+    # runner has headroom for composer/test runs.
+    command: --performance-schema=OFF --innodb-buffer-pool-size=128M
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
       - MYSQL_DATABASE=${DB_DATABASE}
@@ -39,8 +43,6 @@ services:
 
 volumes:
   db:
-  storage:
-  public:
 
 networks:
   testing:
