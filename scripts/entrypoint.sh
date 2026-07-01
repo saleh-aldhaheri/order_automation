@@ -4,7 +4,7 @@ set -euo pipefail
 # Local development entrypoint: prepares the app and runs `php artisan serve`.
 # The application directory is bind-mounted, so code changes are picked up live.
 
-APP_DIR="${APP_DIR:-/var/www/html}"
+APP_DIR="${APP_DIR:-/var/www/app}"
 SERVE_HOST="${SERVE_HOST:-0.0.0.0}"
 SERVE_PORT="${SERVE_PORT:-8000}"
 
@@ -22,7 +22,7 @@ function main() {
 # already present from the host).
 function installDependencies() {
     if [ ! -f vendor/autoload.php ]; then
-        composer install --no-interaction --prefer-dist
+        composer install --no-interaction --prefer-dist --no-dev
     fi
 }
 
