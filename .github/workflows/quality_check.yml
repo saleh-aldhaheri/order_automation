@@ -1,9 +1,6 @@
 name: Quality Check
 
 on: 
-  push: 
-    branches:
-      - ShopeeIntegration
   pull_request:
     branches:
       - main
