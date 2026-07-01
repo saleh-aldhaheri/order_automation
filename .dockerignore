@@ -9,7 +9,6 @@ storage/framework/views/*
 public/build
 public/hot
 public/storage
-.env
 .env.backup
 *.log
 .idea
