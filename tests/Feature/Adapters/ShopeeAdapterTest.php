@@ -32,13 +32,15 @@ use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
 use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Models\Package;
 use App\Models\Shop;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Random\RandomException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
 beforeEach(/**
- * @throws \Random\RandomException
+ * @throws RandomException
  */ function () {
     $this->partnerKey = config('services.shopee.partner_key');
     $this->partnerId = (int) config('services.shopee.partner_id');
@@ -204,8 +206,8 @@ describe('refreshAuthConfiguration', function () {
             ->and($result['auth']['refresh_token'])->toHaveKey('expired_at')
             ->and($result['auth']['access_token']['token'])->toBe($this->accessToken)
             ->and($result['auth']['refresh_token']['token'])->toBe($this->refreshToken)
-            ->and($result['auth']['access_token']['expired_at'])->toBeInstanceOf(\Carbon\Carbon::class)
-            ->and($result['auth']['refresh_token']['expired_at'])->toBeInstanceOf(\Carbon\Carbon::class);
+            ->and($result['auth']['access_token']['expired_at'])->toBeInstanceOf(Carbon::class)
+            ->and($result['auth']['refresh_token']['expired_at'])->toBeInstanceOf(Carbon::class);
     });
 
     it('throws a ShopeeException when Shopee omits a required token field', function () {

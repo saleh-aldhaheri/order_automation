@@ -5,12 +5,11 @@ namespace App\Enums;
 use App\Adapters\ShopeeAdapter;
 use App\Exceptions\ShopIntegrationException;
 use App\Services\Integrations\Contracts\ShopContract;
-use RuntimeException;
 
 enum ShopsEnum: string
 {
-     case SHOPEE = 'shopee';
-     case LAZADA = 'lazada';
+    case SHOPEE = 'shopee';
+    case LAZADA = 'lazada';
 
     /**
      * The integration service that implements this marketplace.
@@ -25,7 +24,7 @@ enum ShopsEnum: string
     {
         return match ($this) {
             self::SHOPEE => ShopeeAdapter::class,
-             self::LAZADA => "LazadaAdapter",
+            self::LAZADA => 'LazadaAdapter',
             default => throw new ShopIntegrationException(null, 'shop is not supported')
         };
     }

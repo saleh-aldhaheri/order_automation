@@ -11,7 +11,7 @@ class ShopIntegrationException extends Exception
 
     public function __construct(?ShopsEnum $shop, string $message)
     {
-        $this->shop = $shop?->value ?? "shop";
+        $this->shop = $shop?->value ?? 'shop';
         parent::__construct("{$this->shop} Error: $message");
     }
 
