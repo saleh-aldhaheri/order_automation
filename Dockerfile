@@ -40,6 +40,8 @@ RUN docker-php-ext-install \
 
 RUN pecl install redis && docker-php-ext-enable redis
 
+RUN pecl install pcov && docker-php-ext-enable pcov
+
 RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/zz-memory-limit.ini
 
 RUN printf '[client]\nssl-verify-server-cert=0\n' > /etc/my.cnf
