@@ -6,8 +6,8 @@ use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
-use Saloon\Enums\Method;
 use Saloon\Contracts\Body\HasBody;
+use Saloon\Enums\Method;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -42,9 +42,9 @@ class DownloadShippingDocument extends ShopeeRequest implements HasBody
     {
         $body = [
             'order_list' => array_map(
-                static fn(ShippingDocumentOrderData $order): array => array_filter(
+                static fn (ShippingDocumentOrderData $order): array => array_filter(
                     $order->toArray(),
-                    static fn($value): bool => $value !== null,
+                    static fn ($value): bool => $value !== null,
                 ),
                 $this->orderList,
             ),

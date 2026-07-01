@@ -42,7 +42,7 @@ class SplitOrder extends ShopeeRequest implements HasBody
         return [
             'order_sn' => $this->orderSn,
             'package_list' => array_map(
-                static fn(SplitOrderPackageData $package): array => $package->toArray(),
+                static fn (SplitOrderPackageData $package): array => $package->toArray(),
                 $this->packageList,
             ),
         ];

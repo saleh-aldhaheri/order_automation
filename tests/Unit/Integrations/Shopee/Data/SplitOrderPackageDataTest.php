@@ -1,7 +1,7 @@
 <?php
 
-use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Data\SplitOrderItemData;
+use App\Integrations\Shopee\Data\SplitOrderPackageData;
 
 it('constructs with all fields including the optional ones', function () {
     $data = new SplitOrderPackageData(

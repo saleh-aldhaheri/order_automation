@@ -6,25 +6,26 @@ use App\Adapters\Contracts\ShopAdapterContract;
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\ShipPackageRequestData;
 use App\Data\Integrations\Requests\SyncPackageRequestData;
-use App\Data\Integrations\Responses\ShippingOptionsResponse;
 use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Data\Integrations\Responses\ShippingOptionsResponse;
+use App\Enums\DocumentStatusEnum;
 use App\Enums\GenerateDocumentEnum;
 use App\Enums\OrderArrangementStepsEnum;
 use App\Enums\OrderStatusEnum;
+use App\Enums\PackageStatusEnum;
 use App\Models\Order;
 use App\Models\Package;
-use App\Enums\PackageStatusEnum;
 use App\Models\Shop;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use App\Enums\DocumentStatusEnum;
 
 class PackageService
 {
-    private  ShopAdapterContract $shopService;
+    private ShopAdapterContract $shopService;
+
     private Shop $shop;
 
     public function setShop(Shop $shop): self
@@ -38,7 +39,7 @@ class PackageService
 
     public function getPackages(int $perPage, ?string $search = null): LengthAwarePaginator
     {
-        //special case pagination orders and package limit only to 25
+        // special case pagination orders and package limit only to 25
         return Package::with('order')
             ->search($search)
             ->paginate(perPage: $perPage <= 25 ? $perPage : 25)
@@ -62,7 +63,7 @@ class PackageService
 
         $existing = $query->first();
 
-        if (!$existing) {
+        if (! $existing) {
             return false;
         }
 
@@ -77,9 +78,8 @@ class PackageService
     /**
      * syncing an order's parcels from the marketplace.
      *
-     * @param Closure $beforeSync lets caller decide what need to done before syncing the package
-     * Example  delete the existing order packages before syncing fn() => $order->packages()->delete()`).
-     *
+     * @param  Closure  $beforeSync  lets caller decide what need to done before syncing the package
+     *                               Example  delete the existing order packages before syncing fn() => $order->packages()->delete()`).
      */
     public function syncPackage(Order $order, ?SyncPackageRequestData $package = null, ?Closure $beforeSync = null): void
     {
@@ -103,9 +103,9 @@ class PackageService
                         'external_package_status' => $parcel->externalPackageStatus,
                         'package_status' => $parcel->packageStatus,
                         'details' => [
-                            "raw_data" =>  $parcel->details,
+                            'raw_data' => $parcel->details,
                             'doc_info' => [],
-                            'tracking_number' => ''
+                            'tracking_number' => '',
                         ],
                     ]
                 );
@@ -177,7 +177,6 @@ class PackageService
         }
 
         $trackingNumber = $this->shopService->getTrackingNumber($package);
-
 
         if ($trackingNumber === null) {
             return null;
@@ -251,7 +250,6 @@ class PackageService
 
         return $status;
     }
-
 
     public function storeDocument(Package $package): bool
     {

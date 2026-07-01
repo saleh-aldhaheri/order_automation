@@ -8,13 +8,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Override;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Package extends Model implements HasMedia
 {
-    use HasFactory, SearchableTrait, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, SearchableTrait;
 
     protected $searchable = [
         'external_package_id',
@@ -31,7 +30,7 @@ class Package extends Model implements HasMedia
         'shop_type',
         'external_package_status',
         'package_status',
-        'details'
+        'details',
     ];
 
     protected $hidden = [
@@ -40,9 +39,8 @@ class Package extends Model implements HasMedia
 
     public $casts = [
         'details' => 'array',
-        'shop_type' =>  ShopsEnum::class
+        'shop_type' => ShopsEnum::class,
     ];
-
 
     public function registerMediaCollections(): void
     {

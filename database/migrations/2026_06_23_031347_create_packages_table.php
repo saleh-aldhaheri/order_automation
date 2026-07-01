@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('external_package_id');
-            $table->string('external_order_id');  //denormalization for faster query with webhooks
+            $table->string('external_order_id');  // denormalization for faster query with webhooks
             $table->foreignId('order_id')
                 ->constrained();
             $table->string('shop_type');

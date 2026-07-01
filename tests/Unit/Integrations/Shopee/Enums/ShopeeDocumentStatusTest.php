@@ -2,14 +2,13 @@
 
 use App\Integrations\Shopee\Enums\ShopeeDocumentStatus;
 
-it('it has expected enums cases',function() {
+it('it has expected enums cases', function () {
     expect(count(ShopeeDocumentStatus::cases()))->toBe(3)
         ->and(ShopeeDocumentStatus::FAILED->value)->toBe('failed')
         ->and(ShopeeDocumentStatus::READY->value)->toBe('ready')
         ->and(ShopeeDocumentStatus::PROCESSING->value)->toBe('processing');
 
 });
-
 
 it('returns correct description per status', function () {
     expect(ShopeeDocumentStatus::PROCESSING->description())

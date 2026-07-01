@@ -3,15 +3,15 @@
 use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 
-it('creates the data object', function() {
-  $data = new CreateShippingDocumentOrderData(
-      orderSn: '123456',
-      packageNumber: 'PKG001',
-      trackingNumber: 'TRACK123',
-      shippingDocumentType: ShopeeShippingDocumentTypeEnum::NORMAL_AIR_WAYBILL,
-  );
+it('creates the data object', function () {
+    $data = new CreateShippingDocumentOrderData(
+        orderSn: '123456',
+        packageNumber: 'PKG001',
+        trackingNumber: 'TRACK123',
+        shippingDocumentType: ShopeeShippingDocumentTypeEnum::NORMAL_AIR_WAYBILL,
+    );
 
-  expect($data->orderSn)->toBe('123456')
+    expect($data->orderSn)->toBe('123456')
         ->and($data->packageNumber)->toBe('PKG001')
         ->and($data->trackingNumber)->toBe('TRACK123')
         ->and($data->shippingDocumentType)

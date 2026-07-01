@@ -1,10 +1,10 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Logistics\Document\DownloadShippingDocument;
 use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Logistics\Document\DownloadShippingDocument;
+use App\Integrations\Shopee\ShopeeClient;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -34,8 +34,8 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the body with the order list and the top-level document type', function() {
+describe('request', function () {
+    it('builds the body with the order list and the top-level document type', function () {
         expect($this->request->body()->all())->toBe([
             'order_list' => [
                 ['order_sn' => $this->orderSn, 'package_number' => $this->packageNumber],
@@ -45,7 +45,7 @@ describe('request', function() {
         ]);
     });
 
-    it('omits the document type when it is not given', function() {
+    it('omits the document type when it is not given', function () {
         $request = new DownloadShippingDocument($this->orderList);
 
         expect($request->body()->all())->toBe([
@@ -56,14 +56,13 @@ describe('request', function() {
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/logistics/download_shipping_document');
     });
 });
 
-
-describe('response', function() {
-    it('returns the raw document file on success', function() {
+describe('response', function () {
+    it('returns the raw document file on success', function () {
         $file = '%PDF-1.4 fake waybill bytes';
 
         $mockRequest = new MockClient([

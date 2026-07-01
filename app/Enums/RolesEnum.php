@@ -29,7 +29,7 @@ enum RolesEnum: string
             PermissionsEnum::SHOP_VIEW,
             PermissionsEnum::SHOP_CONNECT,
             PermissionsEnum::ORDER_VIEW,
-            PermissionsEnum::PACKAGE_VIEW
+            PermissionsEnum::PACKAGE_VIEW,
         ];
     }
 
@@ -40,6 +40,6 @@ enum RolesEnum: string
 
     public function middleware(): string
     {
-        return 'role:' . $this->value;
+        return 'role:'.$this->value;
     }
 }

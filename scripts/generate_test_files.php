@@ -1,7 +1,7 @@
 <?php
 
-$from = __DIR__ . '/../' . $argv[1];
-$to = __DIR__ . '/../' . $argv[2];
+$from = __DIR__.'/../'.$argv[1];
+$to = __DIR__.'/../'.$argv[2];
 
 try {
     exec("cp -r {$from} {$to}");
@@ -12,7 +12,7 @@ try {
         $fileName = $file->getFileName();
         $filePath = $file->getRealPath();
 
-        if (!str_contains($fileName, '.php')) {
+        if (! str_contains($fileName, '.php')) {
             continue;
         }
 
@@ -21,11 +21,11 @@ try {
         $newName = str_replace('.php', 'Test.php', $fileName);
 
         $directory = dirname($filePath);
-        $newFilePath = $directory . '/' . $newName;
+        $newFilePath = $directory.'/'.$newName;
 
         rename($filePath, $newFilePath);
     }
 } catch (throwable $e) {
-    echo $e->getMessage() . PHP_EOL;
+    echo $e->getMessage().PHP_EOL;
     exec("rm  -rf  {$to}");
 }

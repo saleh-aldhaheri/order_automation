@@ -1,14 +1,16 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
+use App\Integrations\Shopee\ShopeeClient;
 use Illuminate\Support\Collection;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
     $this->accessToken = 'access-token';
     $this->shopId = 1;
@@ -28,8 +30,8 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the query parameters', function() {
+describe('request', function () {
+    it('builds the query parameters', function () {
         $query = $this->request->query()->all();
 
         expect($query['order_sn_list'])->toBe(implode(',', $this->orderSnList))
@@ -39,17 +41,16 @@ describe('request', function() {
             ->and($query['response_optional_filed'])->toContain('package_list');
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/order/get_order_detail');
     });
 });
 
+describe('response', function () {
+    it('casts the full dto collection, including the optional fields, from the response', function () {
 
-describe('response', function() {
-    it('casts the full dto collection, including the optional fields, from the response', function() {
-
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetOrderDetail::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetOrderDetail::class => MockResponse::make([
                 'request_id' => 'request-id',
                 'error' => '',
                 'message' => '',
@@ -83,7 +84,7 @@ describe('response', function() {
                         ],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -109,10 +110,10 @@ describe('response', function() {
             ->and($response[1]->cod)->toBeTrue();
     });
 
-    it('casts the dto when only the required fields are returned', function() {
+    it('casts the dto when only the required fields are returned', function () {
 
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetOrderDetail::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetOrderDetail::class => MockResponse::make([
                 'response' => [
                     'order_list' => [
                         [
@@ -128,7 +129,7 @@ describe('response', function() {
                         ],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -147,12 +148,12 @@ describe('response', function() {
     });
 
     it('throws a ShopeeException when Shopee returns an error', function () {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetOrderDetail::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetOrderDetail::class => MockResponse::make([
                 'error' => 'common.error_auth',
                 'message' => 'Invalid access_token.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -160,15 +161,15 @@ describe('response', function() {
         $this->shopeeClient->order()->getOrderDetail($this->orderSnList);
     })->throws(ShopeeException::class);
 
-    it('throws a ShopeeException when the casting fails', function() {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetOrderDetail::class =>  \Saloon\Http\Faking\MockResponse::make([
+    it('throws a ShopeeException when the casting fails', function () {
+        $requestMock = new MockClient([
+            GetOrderDetail::class => MockResponse::make([
                 'response' => [
                     'order_list' => [
                         ['order_sn' => '201218V2Y6E59M'], // missing the other required default fields
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);

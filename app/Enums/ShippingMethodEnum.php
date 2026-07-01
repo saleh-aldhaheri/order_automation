@@ -11,7 +11,7 @@ namespace App\Enums;
  */
 enum ShippingMethodEnum: string
 {
-    case PICKUP         = 'pickup';
-    case DROPOFF        = 'dropoff';
+    case PICKUP = 'pickup';
+    case DROPOFF = 'dropoff';
     case NON_INTEGRATED = 'non_integrated';
 }

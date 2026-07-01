@@ -7,8 +7,8 @@ use App\Integrations\Shopee\Data\ShippingDocumentParameterResultData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
 use Illuminate\Support\Collection;
-use Saloon\Enums\Method;
 use Saloon\Contracts\Body\HasBody;
+use Saloon\Enums\Method;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -38,9 +38,9 @@ class GetShippingDocumentParameter extends ShopeeRequest implements HasBody
     {
         return [
             'order_list' => array_map(
-                static fn(ShippingDocumentOrderData $order): array => array_filter(
+                static fn (ShippingDocumentOrderData $order): array => array_filter(
                     $order->toArray(),
-                    static fn($value): bool => $value !== null,
+                    static fn ($value): bool => $value !== null,
                 ),
                 $this->orderList,
             ),

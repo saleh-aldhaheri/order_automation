@@ -12,9 +12,9 @@ namespace App\Enums;
  */
 enum ShippingInputEnum: string
 {
-    case PICKUP_ADDRESS  = 'pickup_address';
-    case PICKUP_TIME     = 'pickup_time';
-    case DROPOFF_BRANCH  = 'dropoff_branch';
+    case PICKUP_ADDRESS = 'pickup_address';
+    case PICKUP_TIME = 'pickup_time';
+    case DROPOFF_BRANCH = 'dropoff_branch';
     case TRACKING_NUMBER = 'tracking_number';
-    case SENDER_NAME     = 'sender_name';
+    case SENDER_NAME = 'sender_name';
 }

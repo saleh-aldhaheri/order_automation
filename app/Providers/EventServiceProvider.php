@@ -14,7 +14,7 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         ShopeeEvent::class => [
             ShopeeOrderStatusListener::class,
-            ShopeePackageStatusListener::class
+            ShopeePackageStatusListener::class,
         ],
     ];
 

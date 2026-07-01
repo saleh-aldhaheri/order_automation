@@ -6,7 +6,6 @@ use RuntimeException;
 
 enum GenerateDocumentEnum: string
 {
-
     case START_PROCESS = 'start process';
     case DOCUMENT_TYPE = 'document type';
     case CREATE_DOCUMENT = 'create document';

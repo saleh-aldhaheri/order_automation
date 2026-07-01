@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Adapters\Contracts\ShopAdapterContract;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
 use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Enums\ShopsEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use App\Adapters\Contracts\ShopAdapterContract;
 
 class ShopAuthService
 {
@@ -27,7 +27,7 @@ class ShopAuthService
     }
 
     /**
-     *  @return Collection<GetTokenResponseData>
+     * @return Collection<GetTokenResponseData>
      */
     public function callback(Request $request): Collection
     {

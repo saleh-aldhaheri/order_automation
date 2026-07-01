@@ -1,7 +1,7 @@
 <?php
 
-use App\Integrations\Shopee\Data\ShippingDropoffData;
 use App\Integrations\Shopee\Data\ShippingBranchData;
+use App\Integrations\Shopee\Data\ShippingDropoffData;
 use App\Integrations\Shopee\Data\ShippingSlugData;
 
 it('constructs with all fields including the optional ones', function () {

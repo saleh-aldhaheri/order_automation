@@ -1,14 +1,16 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
 use App\Integrations\Shopee\Data\GetShipmentListData;
 use App\Integrations\Shopee\Data\ShipmentListItemData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
+use App\Integrations\Shopee\ShopeeClient;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
     $this->accessToken = 'access-token';
     $this->shopId = 1;
@@ -28,14 +30,14 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the query with page size only', function() {
+describe('request', function () {
+    it('builds the query with page size only', function () {
         expect($this->request->defaultQuery())->toBe([
             'page_size' => $this->pageSize,
         ]);
     });
 
-    it('includes the cursor in the query when given', function() {
+    it('includes the cursor in the query when given', function () {
         $request = new GetShipmentList($this->pageSize, $this->cursor);
 
         expect($request->defaultQuery())->toBe([
@@ -44,17 +46,16 @@ describe('request', function() {
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/order/get_shipment_list');
     });
 });
 
+describe('response', function () {
+    it('casts the full dto, including the optional fields, from the response', function () {
 
-describe('response', function() {
-    it('casts the full dto, including the optional fields, from the response', function() {
-
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetShipmentList::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetShipmentList::class => MockResponse::make([
                 'request_id' => 'request-id',
                 'error' => '',
                 'message' => '',
@@ -66,7 +67,7 @@ describe('response', function() {
                         ['order_sn' => '2404098R48U37H', 'package_number' => 'PKG-2'],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -83,16 +84,16 @@ describe('response', function() {
             ->and($response->orderList[1]->packageNumber)->toBe('PKG-2');
     });
 
-    it('casts the dto when only the required fields are returned', function() {
+    it('casts the dto when only the required fields are returned', function () {
 
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetShipmentList::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetShipmentList::class => MockResponse::make([
                 'response' => [
                     'order_list' => [
                         ['order_sn' => '201218V2Y6E59M', 'package_number' => 'PKG-1'],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -107,12 +108,12 @@ describe('response', function() {
     });
 
     it('throws a ShopeeException when Shopee returns an error', function () {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetShipmentList::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            GetShipmentList::class => MockResponse::make([
                 'error' => 'common.error_auth',
                 'message' => 'Invalid access_token.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -120,15 +121,15 @@ describe('response', function() {
         $this->shopeeClient->order()->getShipmentList($this->pageSize);
     })->throws(ShopeeException::class);
 
-    it('throws a ShopeeException when the casting fails', function() {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            GetShipmentList::class =>  \Saloon\Http\Faking\MockResponse::make([
+    it('throws a ShopeeException when the casting fails', function () {
+        $requestMock = new MockClient([
+            GetShipmentList::class => MockResponse::make([
                 'response' => [
                     'order_list' => [
                         ['order_sn' => '201218V2Y6E59M'], // missing the required package_number
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);

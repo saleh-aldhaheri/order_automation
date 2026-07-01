@@ -1,12 +1,14 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
+use App\Integrations\Shopee\ShopeeClient;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
     $this->accessToken = 'access-token';
     $this->shopId = 1;
@@ -25,29 +27,28 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the body with the order sn', function() {
+describe('request', function () {
+    it('builds the body with the order sn', function () {
         expect($this->request->body()->all())->toBe([
             'order_sn' => $this->orderSn,
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/order/unsplit_order');
     });
 });
 
+describe('response', function () {
+    it('returns true when Shopee unsplits the order', function () {
 
-describe('response', function() {
-    it('returns true when Shopee unsplits the order', function() {
-
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            UnsplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            UnsplitOrder::class => MockResponse::make([
                 'request_id' => 'request-id',
                 'error' => '',
                 'message' => '',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -57,12 +58,12 @@ describe('response', function() {
     });
 
     it('throws a ShopeeException when Shopee returns an error', function () {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            UnsplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            UnsplitOrder::class => MockResponse::make([
                 'error' => 'logistics.error_unsplit',
                 'message' => 'Order can not be unsplit.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);

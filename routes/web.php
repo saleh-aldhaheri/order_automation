@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\PermissionsEnum;
-use App\Enums\ShopsEnum;
 use App\Enums\RolesEnum;
+use App\Enums\ShopsEnum;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ExternalSystemController;

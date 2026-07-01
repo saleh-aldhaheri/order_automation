@@ -1,34 +1,31 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Exceptions\ShopeeException;
-use App\Integrations\Shopee\Resource;
-use App\Integrations\Shopee\Resources\Logistics as LogisticsResource;
-use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
-use Saloon\Http\Faking\MockClient;
-use Saloon\Http\Faking\MockResponse;
-use Illuminate\Support\Collection;
-
-use App\Integrations\Shopee\Requests\Logistics\GetShippingParameter;
-use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
-use App\Integrations\Shopee\Requests\Logistics\UpdateShippingOrder;
-use App\Integrations\Shopee\Requests\Logistics\GetTrackingNumber;
-use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentParameter;
-use App\Integrations\Shopee\Requests\Logistics\Document\CreateShippingDocument;
-use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentResult;
-use App\Integrations\Shopee\Requests\Logistics\Document\DownloadShippingDocument;
-
+use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\CreateShippingDocumentResultData;
+use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
 use App\Integrations\Shopee\Data\GetShippingParameterData;
 use App\Integrations\Shopee\Data\GetTrackingNumberData;
-use App\Integrations\Shopee\Data\ShippingDocumentParameterResultData;
-use App\Integrations\Shopee\Data\CreateShippingDocumentResultData;
-use App\Integrations\Shopee\Data\ShippingDocumentResultData;
-
-use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
-use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
-use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
 use App\Integrations\Shopee\Data\ShipOrderPickupData;
+use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\ShippingDocumentParameterResultData;
+use App\Integrations\Shopee\Data\ShippingDocumentResultData;
 use App\Integrations\Shopee\Data\UpdateShippingPickupData;
+use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Logistics\Document\CreateShippingDocument;
+use App\Integrations\Shopee\Requests\Logistics\Document\DownloadShippingDocument;
+use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentParameter;
+use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentResult;
+use App\Integrations\Shopee\Requests\Logistics\GetShippingParameter;
+use App\Integrations\Shopee\Requests\Logistics\GetTrackingNumber;
+use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
+use App\Integrations\Shopee\Requests\Logistics\UpdateShippingOrder;
+use App\Integrations\Shopee\Resource;
+use App\Integrations\Shopee\Resources\Logistics as LogisticsResource;
+use App\Integrations\Shopee\ShopeeClient;
+use Illuminate\Support\Collection;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->shopeeAuthClient = new ShopeeClient(
@@ -62,7 +59,7 @@ describe('getShippingParameter', function () {
         $logistics = ($this->logistics)(GetShippingParameter::class, [
             'response' => [
                 'info_needed' => ['pickup' => ['address_id', 'pickup_time_id']],
-                'pickup'      => ['address_list' => [['address_id' => 234]]],
+                'pickup' => ['address_list' => [['address_id' => 234]]],
             ],
         ]);
 
@@ -154,9 +151,9 @@ describe('getShippingDocumentParameter', function () {
     it('returns a collection of ShippingDocumentParameterResultData on a valid response', function () use ($orderList) {
         $logistics = ($this->logistics)(GetShippingDocumentParameter::class, [
             'response' => ['result_list' => [[
-                'order_sn'                          => '201ABC',
-                'package_number'                    => 'OFG1',
-                'suggest_shipping_document_type'    => 'NORMAL_AIR_WAYBILL',
+                'order_sn' => '201ABC',
+                'package_number' => 'OFG1',
+                'suggest_shipping_document_type' => 'NORMAL_AIR_WAYBILL',
                 'selectable_shipping_document_type' => ['NORMAL_AIR_WAYBILL'],
             ]]],
         ]);
@@ -279,7 +276,7 @@ describe('downloadShippingDocument', function () {
 
     it('throws ShopeeException when the body is a Shopee error payload', function () use ($orderList) {
         $logistics = ($this->logistics)(DownloadShippingDocument::class, [
-            'error'   => 'logistics.error',
+            'error' => 'logistics.error',
             'message' => 'document not ready',
         ]);
 

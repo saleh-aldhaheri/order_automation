@@ -1,7 +1,7 @@
 <?php
 
-use App\Integrations\Shopee\Data\ShippingPickupData;
 use App\Integrations\Shopee\Data\ShippingAddressData;
+use App\Integrations\Shopee\Data\ShippingPickupData;
 
 it('constructs with all fields including the optional ones', function () {
     $data = new ShippingPickupData(

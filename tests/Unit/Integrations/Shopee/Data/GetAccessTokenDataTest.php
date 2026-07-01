@@ -27,7 +27,6 @@ it('creates the DTO via constructor', function () {
         ->and($data->userIdList)->toBeNull();
 });
 
-
 it('hydrates from snake_case and maps correctly', function () {
 
     $data = GetAccessTokenData::from([

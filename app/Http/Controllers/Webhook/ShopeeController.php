@@ -13,7 +13,7 @@ class ShopeeController
     {
         $payload = $request->json()->all();
 
-        $code   = data_get($payload, 'code');
+        $code = data_get($payload, 'code');
 
         $eventType = ShopeeEventsEnum::tryFrom((int) $code);
 

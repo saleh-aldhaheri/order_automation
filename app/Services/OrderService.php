@@ -12,12 +12,13 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderService
 {
-    private  ShopAdapterContract $shopService;
+    private ShopAdapterContract $shopService;
+
     private Shop $shop;
 
     public function getOrders(int $perPage, ?string $search = null): LengthAwarePaginator
     {
-        //special case pagination orders and package limit only to 25
+        // special case pagination orders and package limit only to 25
         return Order::with('packages')
             ->search($search)
             ->paginate(perPage: $perPage <= 25 ? $perPage : 25)
@@ -76,12 +77,12 @@ class OrderService
             return;
         }
 
-        //single order
+        // single order
         $orders = $this->shopService
             ->getOrder(new GetOrderRequestData([$syncOrderData->externalOrderId]));
 
         $orders->each(
-            fn(OrderResponse $fetchedOrder) => Order::updateOrCreate(
+            fn (OrderResponse $fetchedOrder) => Order::updateOrCreate(
                 [
                     'external_order_id' => $fetchedOrder->externalOrderId,
                     'shop_id' => $fetchedOrder->shopId,

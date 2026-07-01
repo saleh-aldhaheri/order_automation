@@ -15,12 +15,12 @@ class ShopeeWebhookMiddleware
         $rawBody = $request->getContent();
         $url = $request->fullUrl();
 
-        $baseString = $url . '|' . $rawBody;
+        $baseString = $url.'|'.$rawBody;
 
         $expected = hash_hmac('sha256', $baseString, config('services.shopee.partner_key'));
 
         if (! $authorization || ! hash_equals($expected, $authorization)) {
-            throw new ShopeeException('Invalid Shopee push signature',401);
+            throw new ShopeeException('Invalid Shopee push signature', 401);
         }
 
         return $next($request);

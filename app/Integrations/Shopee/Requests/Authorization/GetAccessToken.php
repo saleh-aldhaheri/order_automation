@@ -15,6 +15,7 @@ class GetAccessToken extends ShopeeRequest implements HasBody
     use HasJsonBody;
 
     protected Method $method = Method::POST;
+
     public bool $isPublic = true;
 
     public function __construct(
@@ -32,8 +33,8 @@ class GetAccessToken extends ShopeeRequest implements HasBody
     protected function defaultBody(): array
     {
         return [
-            'code'        => $this->code,
-            'partner_id'  => $this->partnerId,
+            'code' => $this->code,
+            'partner_id' => $this->partnerId,
             $this->idType => $this->shopId,
         ];
     }

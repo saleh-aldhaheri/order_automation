@@ -1,11 +1,11 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Logistics\Document\CreateShippingDocument;
 use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
 use App\Integrations\Shopee\Data\CreateShippingDocumentResultData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Logistics\Document\CreateShippingDocument;
+use App\Integrations\Shopee\ShopeeClient;
 use Illuminate\Support\Collection;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -40,8 +40,8 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the body from the order list, casting the enum and dropping null fields', function() {
+describe('request', function () {
+    it('builds the body from the order list, casting the enum and dropping null fields', function () {
         expect($this->request->body()->all())->toBe([
             'order_list' => [
                 [
@@ -55,14 +55,13 @@ describe('request', function() {
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/logistics/create_shipping_document');
     });
 });
 
-
-describe('response', function() {
-    it('casts the full dto collection, including the optional fields, from the response', function() {
+describe('response', function () {
+    it('casts the full dto collection, including the optional fields, from the response', function () {
         $mockRequest = new MockClient([
             CreateShippingDocument::class => MockResponse::make([
                 'request_id' => 'request-id',
@@ -81,7 +80,7 @@ describe('response', function() {
                         ],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -98,7 +97,7 @@ describe('response', function() {
             ->and($response[1]->failMessage)->toBe('Tracking number not ready.');
     });
 
-    it('casts the dto when only the required fields are returned', function() {
+    it('casts the dto when only the required fields are returned', function () {
         $mockRequest = new MockClient([
             CreateShippingDocument::class => MockResponse::make([
                 'response' => [
@@ -106,7 +105,7 @@ describe('response', function() {
                         ['order_sn' => $this->orderSn],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -127,14 +126,14 @@ describe('response', function() {
                 'error' => 'common.error_auth',
                 'message' => 'Invalid access_token.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
         $this->shopeeClient->logistic()->createShippingDocument($this->orderList);
     })->throws(ShopeeException::class);
 
-    it('throws a ShopeeException when the casting fails', function() {
+    it('throws a ShopeeException when the casting fails', function () {
         $mockRequest = new MockClient([
             CreateShippingDocument::class => MockResponse::make([
                 'response' => [
@@ -142,7 +141,7 @@ describe('response', function() {
                         ['package_number' => $this->packageNumber], // missing the required order_sn
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);

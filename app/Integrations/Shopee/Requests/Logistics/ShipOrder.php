@@ -7,8 +7,8 @@ use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
 use App\Integrations\Shopee\Data\ShipOrderPickupData;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
 use RuntimeException;
-use Saloon\Enums\Method;
 use Saloon\Contracts\Body\HasBody;
+use Saloon\Enums\Method;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 use stdClass;
@@ -82,7 +82,7 @@ class ShipOrder extends ShopeeRequest implements HasBody
      */
     private function objectOrEmpty(array $data): array|stdClass
     {
-        $filtered = array_filter($data, static fn($value): bool => $value !== null);
+        $filtered = array_filter($data, static fn ($value): bool => $value !== null);
 
         return empty($filtered) ? new stdClass : $filtered;
     }

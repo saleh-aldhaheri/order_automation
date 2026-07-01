@@ -16,6 +16,7 @@ class RefreshShopTokenJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 60;
 
     /**
@@ -32,7 +33,7 @@ class RefreshShopTokenJob implements ShouldQueue
     {
         $shop = Shop::query()->where('id', $this->id)->first();
 
-        if (!$shop) {
+        if (! $shop) {
             return;
         }
 
@@ -43,6 +44,6 @@ class RefreshShopTokenJob implements ShouldQueue
 
     public function middleware(): array
     {
-        return  [new RateLimited('shop-refresh')];
+        return [new RateLimited('shop-refresh')];
     }
 }

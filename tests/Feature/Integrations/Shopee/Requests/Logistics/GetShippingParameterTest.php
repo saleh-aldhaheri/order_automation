@@ -1,19 +1,19 @@
 <?php
 
+use App\Integrations\Shopee\Data\GetShippingParameterData;
+use App\Integrations\Shopee\Data\ShippingAddressData;
+use App\Integrations\Shopee\Data\ShippingBranchData;
+use App\Integrations\Shopee\Data\ShippingDropoffData;
+use App\Integrations\Shopee\Data\ShippingInfoNeededData;
+use App\Integrations\Shopee\Data\ShippingPickupData;
+use App\Integrations\Shopee\Data\ShippingSlugData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\Logistics\GetShippingParameter;
-use App\Integrations\Shopee\Data\GetShippingParameterData;
-use App\Integrations\Shopee\Data\ShippingInfoNeededData;
-use App\Integrations\Shopee\Data\ShippingDropoffData;
-use App\Integrations\Shopee\Data\ShippingPickupData;
-use App\Integrations\Shopee\Data\ShippingBranchData;
-use App\Integrations\Shopee\Data\ShippingSlugData;
-use App\Integrations\Shopee\Data\ShippingAddressData;
 use App\Integrations\Shopee\ShopeeClient;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
     $this->partnerId = (int) config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
@@ -36,26 +36,26 @@ beforeEach(function() {
     );
 });
 
-describe('request', function() {
+describe('request', function () {
     it('builds the query parameters', function (string $orderSn, ?string $packageNumber) {
         $request = new GetShippingParameter($orderSn, $packageNumber);
-        $keys =  ["order_sn"];
-        if($packageNumber) {
-            $keys[] = "package_number";
+        $keys = ['order_sn'];
+        if ($packageNumber) {
+            $keys[] = 'package_number';
         }
         expect($request->defaultQuery())->toHaveKeys($keys);
     })->with([
-        ["orderSn", null],
-        ["orderSn", "packageNumber"]
+        ['orderSn', null],
+        ['orderSn', 'packageNumber'],
     ]);
 
-    it('uses the correct endpoint', function() {
+    it('uses the correct endpoint', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/logistics/get_shipping_parameter');
     });
 });
 
-describe('response', function() {
-    it('casts the full dto including the optional parameters', function() {
+describe('response', function () {
+    it('casts the full dto including the optional parameters', function () {
         $mockRequest = new MockClient([
             GetShippingParameter::class => MockResponse::make([
                 'request_id' => 'request-id',
@@ -81,7 +81,7 @@ describe('response', function() {
                         ],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -108,7 +108,7 @@ describe('response', function() {
             ->and($response->pickup->addressList[0]->address)->toBe('123 Main St');
     });
 
-    it('casts the dto when only the required fields are returned', function() {
+    it('casts the dto when only the required fields are returned', function () {
         $mockRequest = new MockClient([
             GetShippingParameter::class => MockResponse::make([
                 'response' => [
@@ -116,7 +116,7 @@ describe('response', function() {
                         'pickup' => ['address_id'],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -131,14 +131,13 @@ describe('response', function() {
             ->and($response->pickup)->toBeNull();
     });
 
-
     it('throws a ShopeeException when Shopee returns an error', function () {
         $mockRequest = new MockClient([
             GetShippingParameter::class => MockResponse::make([
                 'error' => 'common.error_auth',
                 'message' => 'Invalid access_token.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -146,14 +145,13 @@ describe('response', function() {
 
     })->throws(ShopeeException::class);
 
-
-    it("throws a ShopeeException when the casting fails", function() {
+    it('throws a ShopeeException when the casting fails', function () {
         $mockRequest = new MockClient([
             GetShippingParameter::class => MockResponse::make([
                 'response' => [
                     'fake' => 'fake', // missing the required info_needed
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);

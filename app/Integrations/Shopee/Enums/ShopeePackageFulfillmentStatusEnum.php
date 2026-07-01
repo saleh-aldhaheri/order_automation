@@ -4,17 +4,27 @@ namespace App\Integrations\Shopee\Enums;
 
 enum ShopeePackageFulfillmentStatusEnum: string
 {
-    public const LOGISTICS_NOT_START        = 'LOGISTICS_NOT_START';
-    public const LOGISTICS_READY            = 'LOGISTICS_READY';
-    public const LOGISTICS_REQUEST_CREATED  = 'LOGISTICS_REQUEST_CREATED';
-    public const LOGISTICS_PICKUP_DONE      = 'LOGISTICS_PICKUP_DONE';
-    public const LOGISTICS_DELIVERY_DONE    = 'LOGISTICS_DELIVERY_DONE';
-    public const LOGISTICS_PICKUP_RETRY     = 'LOGISTICS_PICKUP_RETRY';
-    public const LOGISTICS_INVALID          = 'LOGISTICS_INVALID';
+    public const LOGISTICS_NOT_START = 'LOGISTICS_NOT_START';
+
+    public const LOGISTICS_READY = 'LOGISTICS_READY';
+
+    public const LOGISTICS_REQUEST_CREATED = 'LOGISTICS_REQUEST_CREATED';
+
+    public const LOGISTICS_PICKUP_DONE = 'LOGISTICS_PICKUP_DONE';
+
+    public const LOGISTICS_DELIVERY_DONE = 'LOGISTICS_DELIVERY_DONE';
+
+    public const LOGISTICS_PICKUP_RETRY = 'LOGISTICS_PICKUP_RETRY';
+
+    public const LOGISTICS_INVALID = 'LOGISTICS_INVALID';
+
     public const LOGISTICS_REQUEST_CANCELED = 'LOGISTICS_REQUEST_CANCELED';
-    public const LOGISTICS_PICKUP_FAILED    = 'LOGISTICS_PICKUP_FAILED';
-    public const LOGISTICS_DELIVERY_FAILED  = 'LOGISTICS_DELIVERY_FAILED';
-    public const LOGISTICS_LOST             = 'LOGISTICS_LOST';
+
+    public const LOGISTICS_PICKUP_FAILED = 'LOGISTICS_PICKUP_FAILED';
+
+    public const LOGISTICS_DELIVERY_FAILED = 'LOGISTICS_DELIVERY_FAILED';
+
+    public const LOGISTICS_LOST = 'LOGISTICS_LOST';
 
     public static function label(string $status): string
     {

@@ -4,6 +4,7 @@ namespace App\Data\Integrations\Responses;
 
 use App\Enums\OrderStatusEnum;
 use App\Enums\ShopsEnum;
+use App\Services\Integrations\ShopeeService;
 use Spatie\LaravelData\Data;
 
 /**
@@ -11,7 +12,7 @@ use Spatie\LaravelData\Data;
  *
  * This DTO is pure data and knows about no marketplace. Each vendor translates
  * its own payload into this shape in its service
- * (e.g. {@see \App\Services\Integrations\ShopeeService::getOrder()}).
+ * (e.g. {@see ShopeeService::getOrder()}).
  *
  * Mirrors the `orders` table, plus the order's parcels as a list of
  * {@see PackageResponse}.

@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Integrations\Shopee\Data\RefreshAccessTokenData;
 
 it('creates refresh access token DTO via constructor', function () {
@@ -29,7 +28,6 @@ it('creates refresh access token DTO via constructor', function () {
         ->and($data->supplierIdList)->toBe([1, 2, 3])
         ->and($data->userIdList)->toBe([9, 8, 7]);
 });
-
 
 it('hydrates snake_case response into DTO correctly', function () {
 

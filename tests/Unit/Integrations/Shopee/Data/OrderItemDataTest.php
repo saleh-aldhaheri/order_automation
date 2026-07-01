@@ -1,7 +1,7 @@
 <?php
 
-use App\Integrations\Shopee\Data\OrderItemData;
 use App\Integrations\Shopee\Data\ImageInfoData;
+use App\Integrations\Shopee\Data\OrderItemData;
 
 it('constructs with all fields including the optional ones', function () {
     $data = new OrderItemData(

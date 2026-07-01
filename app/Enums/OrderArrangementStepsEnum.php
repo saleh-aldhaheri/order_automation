@@ -2,19 +2,20 @@
 
 namespace App\Enums;
 
+use App\Services\PackageService;
 use RuntimeException;
 
 /**
  * Catalogue of every order-arrangement step the system supports across all
  * providers. Drives orchestration and validation — which steps a given shop can
  * run, and in what order. The actual work is done by typed methods on
- * {@see \App\Services\PackageService} that wrap the provider's typed calls.
+ * {@see PackageService} that wrap the provider's typed calls.
  */
 enum OrderArrangementStepsEnum: string
 {
     case START_PROCESS = 'start process';
-    case PICKUP        = 'pickup option';
-    case SHIP          = 'ship';
+    case PICKUP = 'pickup option';
+    case SHIP = 'ship';
 
     /**
      * Steps a given shop type supports, in execution order.

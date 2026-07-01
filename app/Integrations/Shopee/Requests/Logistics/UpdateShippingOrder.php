@@ -5,8 +5,8 @@ namespace App\Integrations\Shopee\Requests\Logistics;
 use App\Integrations\Shopee\Data\UpdateShippingPickupData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
-use Saloon\Enums\Method;
 use Saloon\Contracts\Body\HasBody;
+use Saloon\Enums\Method;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 

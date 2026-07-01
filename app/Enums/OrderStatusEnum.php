@@ -15,15 +15,15 @@ enum OrderStatusEnum: string
     {
         return match ($shopeeOrderStatus) {
             ShopeeOrderStatusEnum::UNPAID,
-            ShopeeOrderStatusEnum::READY_TO_SHIP        => OrderStatusEnum::UNPROCESSED,
+            ShopeeOrderStatusEnum::READY_TO_SHIP => OrderStatusEnum::UNPROCESSED,
             ShopeeOrderStatusEnum::PROCESSED,
             ShopeeOrderStatusEnum::SHIPPED,
             ShopeeOrderStatusEnum::TO_CONFIRM_RECEIVE,
             ShopeeOrderStatusEnum::COMPLETED,
-            ShopeeOrderStatusEnum::RETRY_SHIP           => OrderStatusEnum::PROCESSED,
+            ShopeeOrderStatusEnum::RETRY_SHIP => OrderStatusEnum::PROCESSED,
             ShopeeOrderStatusEnum::IN_CANCEL,
-            ShopeeOrderStatusEnum::CANCELLED            => OrderStatusEnum::CANCELLED,
-            ShopeeOrderStatusEnum::TO_RETURN            => OrderStatusEnum::RETURNING,
+            ShopeeOrderStatusEnum::CANCELLED => OrderStatusEnum::CANCELLED,
+            ShopeeOrderStatusEnum::TO_RETURN => OrderStatusEnum::RETURNING,
         };
     }
 }

@@ -1,23 +1,23 @@
 <?php
 
+use App\Integrations\Shopee\Data\GetAccessTokenData;
 use App\Integrations\Shopee\Data\RefreshAccessTokenData;
-use App\Integrations\Shopee\ShopeeClient;
+use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Authorization\GetAccessToken;
 use App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken;
+use App\Integrations\Shopee\ShopeeClient;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
-use App\Integrations\Shopee\Requests\Authorization\GetAccessToken;
-use App\Integrations\Shopee\Exceptions\ShopeeException;
-use App\Integrations\Shopee\Data\GetAccessTokenData;
 
-beforeEach(function() {
+beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
-    $this->accessToken = "fake";
-    $this->shopId = "fake";
-    $this->refreshToken  = "fake";
+    $this->accessToken = 'fake';
+    $this->shopId = 'fake';
+    $this->refreshToken = 'fake';
 
-    $this->shopeeClient = new ShopeeClient (
+    $this->shopeeClient = new ShopeeClient(
         $this->partnerId,
         $this->partnerKey,
         $this->baseUrl
@@ -34,28 +34,28 @@ beforeEach(function() {
 });
 
 it('should be instance of Resource', function () {
-  $authResource = $this->shopeeAuthClient->authorization();
+    $authResource = $this->shopeeAuthClient->authorization();
 
-  expect($authResource)->toBeInstanceOf(App\Integrations\Shopee\Resource::class)
-      ->toHaveProperty('connector');
+    expect($authResource)->toBeInstanceOf(App\Integrations\Shopee\Resource::class)
+        ->toHaveProperty('connector');
 });
 
-describe('refresh access token', function() {
+describe('refresh access token', function () {
     it('should call refresh token request correctly and return RefreshAccessTokenData', function () {
 
         $mockRequest = new MockClient([
-            RefreshAccessToken::class => MockResponse::make( [
-                "access_token" => "fake",
-                "refresh_token" => "fake",
-                "expire_in" => time()
-            ])
+            RefreshAccessToken::class => MockResponse::make([
+                'access_token' => 'fake',
+                'refresh_token' => 'fake',
+                'expire_in' => time(),
+            ]),
         ]);
 
         $this->shopeeAuthClient->withMockClient($mockRequest);
 
-        $response =  $this->shopeeAuthClient->authorization()->refreshAccessToken();
+        $response = $this->shopeeAuthClient->authorization()->refreshAccessToken();
 
-        expect($response->accessToken)->toBe("fake")
+        expect($response->accessToken)->toBe('fake')
             ->and($response->refreshToken)->toBe('fake')
             ->and($response)->toBeInstanceOf(RefreshAccessTokenData::class);
     });
@@ -63,9 +63,9 @@ describe('refresh access token', function() {
     it('throw exception when casting failed', function () {
 
         $mockRequest = new MockClient([
-            RefreshAccessToken::class => MockResponse::make( [
-                "foo" => "wrong response"
-            ])
+            RefreshAccessToken::class => MockResponse::make([
+                'foo' => 'wrong response',
+            ]),
         ]);
 
         $this->shopeeAuthClient->withMockClient($mockRequest);
@@ -75,24 +75,22 @@ describe('refresh access token', function() {
     })->throws(ShopeeException::class);
 });
 
-
-
-describe('get access token', function() {
+describe('get access token', function () {
     it('should call refresh token request correctly and return RefreshAccessTokenData', function () {
 
         $mockRequest = new MockClient([
-            GetAccessToken::class => MockResponse::make( [
-                "access_token" => "fake",
-                "refresh_token" => "fake",
-                "expire_in" => time()
-            ])
+            GetAccessToken::class => MockResponse::make([
+                'access_token' => 'fake',
+                'refresh_token' => 'fake',
+                'expire_in' => time(),
+            ]),
         ]);
 
         $this->shopeeAuthClient->withMockClient($mockRequest);
 
-        $response =  $this->shopeeAuthClient->authorization()->getAccessToken('code', 'account_id', 'shop_id');
+        $response = $this->shopeeAuthClient->authorization()->getAccessToken('code', 'account_id', 'shop_id');
 
-        expect($response->accessToken)->toBe("fake")
+        expect($response->accessToken)->toBe('fake')
             ->and($response->refreshToken)->toBe('fake')
             ->and($response)->toBeInstanceOf(GetAccessTokenData::class);
     });
@@ -100,15 +98,14 @@ describe('get access token', function() {
     it('throw exception when casting failed', function () {
 
         $mockRequest = new MockClient([
-            GetAccessToken::class => MockResponse::make( [
-                "foo" => "wrong response"
-            ])
+            GetAccessToken::class => MockResponse::make([
+                'foo' => 'wrong response',
+            ]),
         ]);
 
         $this->shopeeAuthClient->withMockClient($mockRequest);
 
-       $this->shopeeAuthClient->authorization()->getAccessToken('code', 'account_id', 'shop_id');
+        $this->shopeeAuthClient->authorization()->getAccessToken('code', 'account_id', 'shop_id');
 
     })->throws(ShopeeException::class);
 });
-

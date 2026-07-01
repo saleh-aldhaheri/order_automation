@@ -18,9 +18,9 @@ use Spatie\LaravelData\Data;
 class ShippingMethodOption extends Data
 {
     /**
-     * @param  array<int, ShippingInputEnum>     $requiredInputs
-     * @param  array<int, PickupAddressOption>   $addresses
-     * @param  array<int, DropoffBranchOption>   $branches
+     * @param  array<int, ShippingInputEnum>  $requiredInputs
+     * @param  array<int, PickupAddressOption>  $addresses
+     * @param  array<int, DropoffBranchOption>  $branches
      */
     public function __construct(
         public ShippingMethodEnum $method,

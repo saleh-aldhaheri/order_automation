@@ -1,15 +1,15 @@
 <?php
 
 use App\Integrations\Shopee\Data\GetShippingParameterData;
-use App\Integrations\Shopee\Data\ShippingInfoNeededData;
 use App\Integrations\Shopee\Data\ShippingDropoffData;
+use App\Integrations\Shopee\Data\ShippingInfoNeededData;
 use App\Integrations\Shopee\Data\ShippingPickupData;
 
 it('constructs with all fields including the optional ones', function () {
     $data = new GetShippingParameterData(
         infoNeeded: new ShippingInfoNeededData(pickup: ['address_id']),
-        dropoff: new ShippingDropoffData(),
-        pickup: new ShippingPickupData(),
+        dropoff: new ShippingDropoffData,
+        pickup: new ShippingPickupData,
     );
 
     expect($data->infoNeeded)->toBeInstanceOf(ShippingInfoNeededData::class)

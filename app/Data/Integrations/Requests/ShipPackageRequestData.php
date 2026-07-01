@@ -2,13 +2,14 @@
 
 namespace App\Data\Integrations\Requests;
 
+use App\Data\Integrations\Responses\ShippingOptionsResponse;
 use App\Enums\ShippingMethodEnum;
 use App\Models\Package;
 use Spatie\LaravelData\Data;
 
 /**
  * Vendor-neutral request to ship a package — the seller's selection from a
- * {@see \App\Data\Integrations\Responses\ShippingOptionsResponse}.
+ * {@see ShippingOptionsResponse}.
  *
  * STUB: this is the symmetric write side of the shipping flow. The frontend will
  * post back the chosen `method` plus the inputs that method required (the opaque

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ShopsEnum;
 use App\Traits\SearchableTrait;
+use Database\Factories\ShopFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
 {
-    /** @use HasFactory<\Database\Factories\ShopFactory> */
+    /** @use HasFactory<ShopFactory> */
     use HasFactory, SearchableTrait;
 
     protected $searchable = [
@@ -28,15 +29,16 @@ class Shop extends Model
 
     /**
      * Hidden from array/JSON serialization — `auth_configuration` holds OAuth
+     *
      * @var list<string>
      */
     protected $hidden = [
         'auth_configuration',
     ];
 
-    protected  $casts = [
-        "auth_configuration" => 'array',
-        'shop_type' => ShopsEnum::class
+    protected $casts = [
+        'auth_configuration' => 'array',
+        'shop_type' => ShopsEnum::class,
     ];
 
     public function scopeGetShop(Builder $query, string $externalShopId, ShopsEnum $shopType): void

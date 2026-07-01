@@ -2,27 +2,29 @@
 
 namespace App\Integrations\Shopee\Resources;
 
+use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\CreateShippingDocumentResultData;
+use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
+use App\Integrations\Shopee\Data\GetShippingParameterData;
+use App\Integrations\Shopee\Data\GetTrackingNumberData;
+use App\Integrations\Shopee\Data\ShipOrderDropoffData;
+use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
+use App\Integrations\Shopee\Data\ShipOrderPickupData;
+use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\ShippingDocumentParameterResultData;
+use App\Integrations\Shopee\Data\ShippingDocumentResultData;
+use App\Integrations\Shopee\Data\UpdateShippingPickupData;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
-use App\Integrations\Shopee\Resource;
-use Illuminate\Support\Collection;
-use App\Integrations\Shopee\Data\{
-    GetShippingParameterData,
-    GetTrackingNumberData,
-    ShipOrderDropoffData,
-    ShipOrderNonIntegratedData,
-    ShipOrderPickupData,
-    UpdateShippingPickupData,
-};
-use App\Integrations\Shopee\Requests\Logistics\{
-    GetTrackingNumber,
-    ShipOrder,
-    UpdateShippingOrder,
-    GetShippingParameter,
-};
 use App\Integrations\Shopee\Requests\Logistics\Document\CreateShippingDocument;
 use App\Integrations\Shopee\Requests\Logistics\Document\DownloadShippingDocument;
 use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentParameter;
 use App\Integrations\Shopee\Requests\Logistics\Document\GetShippingDocumentResult;
+use App\Integrations\Shopee\Requests\Logistics\GetShippingParameter;
+use App\Integrations\Shopee\Requests\Logistics\GetTrackingNumber;
+use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
+use App\Integrations\Shopee\Requests\Logistics\UpdateShippingOrder;
+use App\Integrations\Shopee\Resource;
+use Illuminate\Support\Collection;
 
 class Logistics extends Resource
 {
@@ -76,7 +78,7 @@ class Logistics extends Resource
         ?string $packageNumber = null,
         ?string $responseOptionalFields = null
     ): GetTrackingNumberData {
-        return  $this->connector->send(new GetTrackingNumber(
+        return $this->connector->send(new GetTrackingNumber(
             $orderSn,
             $packageNumber,
             $responseOptionalFields
@@ -86,9 +88,8 @@ class Logistics extends Resource
     /**
      * Get the selectable + suggested waybill document type for each order.
      *
-     * @param  array<int, \App\Integrations\Shopee\Data\ShippingDocumentOrderData>  $orderList
-     * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\ShippingDocumentParameterResultData>
-     *
+     * @param  array<int, ShippingDocumentOrderData>  $orderList
+     * @return Collection<int, ShippingDocumentParameterResultData>
      */
     public function getShippingDocumentParameter(array $orderList): Collection
     {
@@ -100,8 +101,8 @@ class Logistics extends Resource
     /**
      * Start the waybill (AWB) task — call after a tracking number exists.
      *
-     * @param  array<int, \App\Integrations\Shopee\Data\CreateShippingDocumentOrderData>  $orderList
-     * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\CreateShippingDocumentResultData>
+     * @param  array<int, CreateShippingDocumentOrderData>  $orderList
+     * @return Collection<int, CreateShippingDocumentResultData>
      */
     public function createShippingDocument(array $orderList): Collection
     {
@@ -113,8 +114,8 @@ class Logistics extends Resource
     /**
      * Poll the waybill task status — downloadable only when status is READY.
      *
-     * @param  array<int, \App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData>  $orderList
-     * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\ShippingDocumentResultData>
+     * @param  array<int, GetShippingDocumentResultOrderData>  $orderList
+     * @return Collection<int, ShippingDocumentResultData>
      */
     public function getShippingDocumentResult(array $orderList): Collection
     {
@@ -127,13 +128,12 @@ class Logistics extends Resource
      * Download the waybill — returns the raw file bytes (PDF / HTML / ZIP, check
      * the format). Call only after the result status is READY.
      *
-     * @param  array<int, \App\Integrations\Shopee\Data\ShippingDocumentOrderData>  $orderList
+     * @param  array<int, ShippingDocumentOrderData>  $orderList
      */
     public function downloadShippingDocument(
         array $orderList,
         ?ShopeeShippingDocumentTypeEnum $shippingDocumentType = null,
-    ): string
-    {
+    ): string {
         return $this->connector
             ->send(new DownloadShippingDocument($orderList, $shippingDocumentType))
             ->dtoOrFail();

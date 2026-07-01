@@ -49,7 +49,7 @@ class ShopController extends Controller
 
     public function callback(Request $request, string $type)
     {
-        $data =  $this->shopAuthService
+        $data = $this->shopAuthService
             ->setShop(ShopsEnum::from($type))
             ->callback($request);
 
@@ -63,6 +63,7 @@ class ShopController extends Controller
         $shop = $this->shopService
             ->setShop($shop)
             ->refreshAuthConfiguration();
+
         return $shop;
     }
 }

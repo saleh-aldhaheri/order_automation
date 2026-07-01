@@ -53,7 +53,6 @@ class SearchPackageList extends ShopeeRequest implements HasBody
         return $body;
     }
 
-
     public function toDto(Response $response): SearchPackageListData
     {
         $json = $response->json();
@@ -71,6 +70,6 @@ class SearchPackageList extends ShopeeRequest implements HasBody
      */
     private function stripNull(array $data): array
     {
-        return array_filter($data, static fn($value): bool => $value !== null);
+        return array_filter($data, static fn ($value): bool => $value !== null);
     }
 }

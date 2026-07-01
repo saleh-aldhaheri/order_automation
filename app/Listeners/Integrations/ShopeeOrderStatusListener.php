@@ -32,16 +32,16 @@ class ShopeeOrderStatusListener implements ShouldQueue
             ->getShop($event->payload['shop_id'], ShopsEnum::SHOPEE)
             ->first();
 
-        if (!$shop) {
+        if (! $shop) {
             return;
         }
 
         $syncOrder = SyncOrderRequestData::fromShopee($event->payload);
 
         // avoid race condition, expire after 10s
-        Cache::lock('handle-orders-shopee:' . $syncOrder->externalOrderId, 10)
+        Cache::lock('handle-orders-shopee:'.$syncOrder->externalOrderId, 10)
             ->block(5, function () use ($shop, $syncOrder) {
-                (new OrderService())
+                (new OrderService)
                     ->setShop($shop)
                     ->syncShopOrder($syncOrder);
             });

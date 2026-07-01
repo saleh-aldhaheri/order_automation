@@ -5,6 +5,7 @@ namespace App\Integrations\Shopee\Requests\Orders;
 use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
 use App\Integrations\Shopee\Requests\ShopeeRequest;
+use App\Services\Integrations\ShopeeService;
 use Illuminate\Support\Collection;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
@@ -50,12 +51,11 @@ class GetOrderDetail extends ShopeeRequest
 
     /**
      * @param  array  $orderSnList
-     *     One or more order_sn values joined by commas. Limit [1,50]. Required.
-     *
+     *                              One or more order_sn values joined by commas. Limit [1,50]. Required.
      * @param  ?bool  $requestOrderStatusPending
-     *     Migration-period compatibility flag. Sending true makes the API support
-     *     the PENDING status and return pending_terms; sending false (or omitting it)
-     *     falls back to the old logic.
+     *                                            Migration-period compatibility flag. Sending true makes the API support
+     *                                            the PENDING status and return pending_terms; sending false (or omitting it)
+     *                                            falls back to the old logic.
      */
     public function __construct(
         public array $orderSnList,
@@ -72,7 +72,7 @@ class GetOrderDetail extends ShopeeRequest
         return [
             'order_sn_list' => implode(',', $this->orderSnList),
             'request_order_status_pending' => $this->requestOrderStatusPending,
-            'response_optional_filed' => implode(',', self::OPTIONAL_FIELDS)
+            'response_optional_filed' => implode(',', self::OPTIONAL_FIELDS),
         ];
     }
 
@@ -80,10 +80,10 @@ class GetOrderDetail extends ShopeeRequest
      * Inbound boundary: Shopee `response.order_list` -> faithful vendor DTOs.
      *
      * Translation into the application's OrderResponse happens in
-     * {@see \App\Services\Integrations\ShopeeService} — this layer only speaks
+     * {@see ShopeeService} — this layer only speaks
      * Shopee's language.
      *
-     * @return \Illuminate\Support\Collection<int, GetOrderDetailsData>
+     * @return Collection<int, GetOrderDetailsData>
      */
     public function toDto(Response $response): Collection
     {

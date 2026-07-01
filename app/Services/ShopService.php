@@ -11,7 +11,8 @@ use Illuminate\Support\Collection;
 
 class ShopService
 {
-    private  ShopAdapterContract $shopService;
+    private ShopAdapterContract $shopService;
+
     private Shop $shop;
 
     public function setShop(Shop $shop): self
@@ -44,7 +45,7 @@ class ShopService
      */
     public static function createShops(Collection $shops): void
     {
-        $createdShops = collect($shops)->map(fn(GetTokenResponseData $shop) => Shop::updateOrCreate(
+        $createdShops = collect($shops)->map(fn (GetTokenResponseData $shop) => Shop::updateOrCreate(
             [
                 'external_shop_id' => $shop->externalShopId,
                 'shop_type' => $shop->shopType->value,
@@ -55,7 +56,7 @@ class ShopService
             ]
         ));
 
-        $createdShops->each(fn(Shop $shop) => RefreshShopTokenJob::dispatch($shop->id));
+        $createdShops->each(fn (Shop $shop) => RefreshShopTokenJob::dispatch($shop->id));
     }
 
     public function refreshAuthConfiguration(): Shop
@@ -63,7 +64,7 @@ class ShopService
         $authConfig = $this->shopService->refreshAuthConfiguration();
 
         $this->shop->update([
-            'auth_configuration' => $authConfig
+            'auth_configuration' => $authConfig,
         ]);
 
         $this->shop->refresh();

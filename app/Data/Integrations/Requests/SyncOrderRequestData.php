@@ -14,7 +14,6 @@ class SyncOrderRequestData extends Data
         public ?OrderStatusEnum $orderStatus = null,
     ) {}
 
-
     public static function fromShopee(array $data): self
     {
         $externalOrderStatus = null;
@@ -25,7 +24,7 @@ class SyncOrderRequestData extends Data
 
         return new self(
             externalOrderId: data_get($data['data'], 'ordersn'),
-            externalOrderStatus: $externalOrderStatus ? $externalOrderStatus?->value :  null,
+            externalOrderStatus: $externalOrderStatus ? $externalOrderStatus?->value : null,
             orderStatus: $externalOrderStatus ? OrderStatusEnum::fromShopee($externalOrderStatus) : null
         );
     }

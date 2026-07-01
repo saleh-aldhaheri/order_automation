@@ -32,16 +32,16 @@ class ShopeePackageStatusListener implements ShouldQueue
         }
 
         $shop = Shop::query()->getShop($event->payload['shop_id'], ShopsEnum::SHOPEE)->first();
-        if (!$shop) {
+        if (! $shop) {
             return;
         }
 
         $externalOrderId = $event->payload['data']['ordersn'];
-        $orderLockKey = 'handle-orders-shopee:' . $externalOrderId;
+        $orderLockKey = 'handle-orders-shopee:'.$externalOrderId;
 
         $order = Order::query()->getOrder($externalOrderId, $shop->id)->first();
 
-        if (!$order) {
+        if (! $order) {
             // avoid race conditions, lock automatically releases after 10s
             Cache::lock($orderLockKey, 10)->block(5, function () use ($shop, &$order, $externalOrderId) {
                 // recheck inside lock - another job may have created it while we waited
@@ -52,7 +52,7 @@ class ShopeePackageStatusListener implements ShouldQueue
                 }
 
                 $syncOrder = new SyncOrderRequestData(externalOrderId: $externalOrderId);
-                (new OrderService())
+                (new OrderService)
                     ->setShop($shop)
                     ->syncShopOrder($syncOrder);
 
@@ -60,24 +60,24 @@ class ShopeePackageStatusListener implements ShouldQueue
             });
         }
 
-        if (!$order) {
+        if (! $order) {
             return;
         }
 
-        $packageService = (new PackageService())->setShop($shop);
+        $packageService = (new PackageService)->setShop($shop);
 
         $packageRequestData = SyncPackageRequestData::fromShopee($event->payload);
-        $packageLockKey = 'shopee-package:' . $packageRequestData->externalPackageId;
+        $packageLockKey = 'shopee-package:'.$packageRequestData->externalPackageId;
 
         // avoid race conditions, lock automatically releases after 10s
         Cache::lock($packageLockKey, 10)->block(
             5,
             function () use ($packageRequestData, &$order, $packageService) {
-                if (!$packageService->updatePackageStatus($packageRequestData)) {
+                if (! $packageService->updatePackageStatus($packageRequestData)) {
                     $packageService->syncPackage(
                         $order,
                         $packageRequestData,
-                        fn() => $order->packages()->delete()
+                        fn () => $order->packages()->delete()
                     );
                 }
             }

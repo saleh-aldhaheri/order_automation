@@ -24,8 +24,8 @@ class GetShippingParameter extends ShopeeRequest
 
     public function defaultQuery(): array
     {
-        $query  = [
-            'order_sn' => $this->orderSn
+        $query = [
+            'order_sn' => $this->orderSn,
         ];
 
         if ($this->packageNumber) {

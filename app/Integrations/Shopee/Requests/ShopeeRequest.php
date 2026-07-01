@@ -6,9 +6,8 @@ use App\Integrations\Shopee\Exceptions\ShopeeException;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-abstract  class ShopeeRequest extends Request
+abstract class ShopeeRequest extends Request
 {
-
     final public function createDtoFromResponse(Response $response): mixed
     {
         try {
@@ -17,5 +16,6 @@ abstract  class ShopeeRequest extends Request
             throw new ShopeeException($e->getMessage());
         }
     }
+
     abstract protected function toDto(Response $response): mixed;
 }

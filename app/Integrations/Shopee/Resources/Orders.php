@@ -2,28 +2,25 @@
 
 namespace App\Integrations\Shopee\Resources;
 
+use App\Integrations\Shopee\Data\GetOrderDetailsData;
+use App\Integrations\Shopee\Data\GetOrderListData;
+use App\Integrations\Shopee\Data\GetShipmentListData;
+use App\Integrations\Shopee\Data\PackageDetailData;
+use App\Integrations\Shopee\Data\SearchPackageFilterData;
+use App\Integrations\Shopee\Data\SearchPackageListData;
+use App\Integrations\Shopee\Data\SearchPackageSortData;
+use App\Integrations\Shopee\Data\SplitOrderData;
+use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
+use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
+use App\Integrations\Shopee\Requests\Orders\GetOrderList;
+use App\Integrations\Shopee\Requests\Orders\GetPackageDetail;
+use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
+use App\Integrations\Shopee\Requests\Orders\SearchPackageList;
+use App\Integrations\Shopee\Requests\Orders\SplitOrder;
+use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
 use App\Integrations\Shopee\Resource;
 use Illuminate\Support\Collection;
-use App\Integrations\Shopee\Data\{
-    GetOrderDetailsData,
-    GetOrderListData,
-    GetShipmentListData,
-    SearchPackageFilterData,
-    SearchPackageListData,
-    SearchPackageSortData,
-    SplitOrderData,
-    SplitOrderPackageData,
-};
-use App\Integrations\Shopee\Requests\Orders\{
-    GetOrderDetail,
-    GetOrderList,
-    GetPackageDetail,
-    GetShipmentList,
-    SearchPackageList,
-    SplitOrder,
-    UnsplitOrder,
-};
 
 class Orders extends Resource
 {
@@ -31,7 +28,7 @@ class Orders extends Resource
      * Fetch full order details for the given order_sn values (limit 50).
      *
      * @param  list<string>  $orderSnList
-     * @return \Illuminate\Support\Collection<int, GetOrderDetailsData>
+     * @return Collection<int, GetOrderDetailsData>
      */
     public function getOrderDetail(
         array $orderSnList,
@@ -53,9 +50,9 @@ class Orders extends Resource
         int $pageSize = 50,
         ?string $cursor = null,
         ?ShopeeOrderStatusEnum $orderStatus = null,
-        ?string $responseOptionalFields =  null,
+        ?string $responseOptionalFields = null,
         ?bool $requestOrderStatusPending = null,
-        ?int $logisticsChannelId =  null,
+        ?int $logisticsChannelId = null,
     ): GetOrderListData {
         return $this->connector->send(new GetOrderList(
             $timeRangeField,
@@ -115,7 +112,7 @@ class Orders extends Resource
      * Get package details for the given package numbers (limit 50).
      *
      * @param  array<int, string>  $packageNumberList
-     * @return \Illuminate\Support\Collection<int, \App\Integrations\Shopee\Data\PackageDetailData>
+     * @return Collection<int, PackageDetailData>
      */
     public function getPackageDetail(array $packageNumberList): Collection
     {

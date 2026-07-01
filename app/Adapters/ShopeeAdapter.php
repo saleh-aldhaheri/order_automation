@@ -6,44 +6,45 @@ use App\Adapters\Contracts\ShopAdapterContract;
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
 use App\Data\Integrations\Requests\ShipPackageRequestData;
+use App\Data\Integrations\Responses\DocumentFileData;
+use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Data\Integrations\Responses\DropoffBranchOption;
+use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
-use App\Data\Integrations\Responses\GetTokenResponseData;
-use App\Data\Integrations\Responses\DropoffBranchOption;
 use App\Data\Integrations\Responses\PickupAddressOption;
 use App\Data\Integrations\Responses\PickupTimeSlotOption;
 use App\Data\Integrations\Responses\ShippingMethodOption;
 use App\Data\Integrations\Responses\ShippingOptionsResponse;
-use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
-use App\Data\Integrations\Responses\DocumentFileData;
 use App\Enums\DocumentStatusEnum;
-use App\Integrations\Shopee\Enums\ShopeeDocumentStatus;
 use App\Enums\OrderStatusEnum;
 use App\Enums\PackageStatusEnum;
 use App\Enums\ShippingInputEnum;
 use App\Enums\ShippingMethodEnum;
-use App\Integrations\Shopee\Data\GetOrderDetailsData;
-use App\Integrations\Shopee\Data\PackageData;
 use App\Enums\ShopsEnum;
+use App\Exceptions\ShopIntegrationException;
 use App\Integrations\Shopee\Data\CreateShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\GetOrderDetailsData;
 use App\Integrations\Shopee\Data\GetShippingDocumentResultOrderData;
 use App\Integrations\Shopee\Data\GetShippingParameterData;
-use App\Integrations\Shopee\Data\ShippingAddressData;
-use App\Integrations\Shopee\Data\ShippingBranchData;
-use App\Integrations\Shopee\Data\ShippingTimeSlotData;
+use App\Integrations\Shopee\Data\PackageData;
+use App\Integrations\Shopee\Data\RefreshAccessTokenData;
 use App\Integrations\Shopee\Data\ShipOrderDropoffData;
 use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
 use App\Integrations\Shopee\Data\ShipOrderPickupData;
-use App\Integrations\Shopee\Data\RefreshAccessTokenData;
+use App\Integrations\Shopee\Data\ShippingAddressData;
+use App\Integrations\Shopee\Data\ShippingBranchData;
 use App\Integrations\Shopee\Data\ShippingDocumentOrderData;
+use App\Integrations\Shopee\Data\ShippingTimeSlotData;
+use App\Integrations\Shopee\Enums\ShopeeDocumentStatus;
 use App\Integrations\Shopee\Enums\ShopeeOrderStatusEnum;
 use App\Integrations\Shopee\Enums\ShopeePackageFulfillmentStatusEnum;
 use App\Integrations\Shopee\Enums\ShopeeShippingDocumentTypeEnum;
 use App\Integrations\Shopee\ShopeeClient;
 use App\Models\Package;
 use App\Models\Shop;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use RuntimeException;
 
 class ShopeeAdapter implements ShopAdapterContract
 {
@@ -69,11 +70,7 @@ class ShopeeAdapter implements ShopAdapterContract
             $this->externalShopId,
             $this->refreshToken,
             function (RefreshAccessTokenData $refreshData) {
-                $authConfiguration = $this->shop->auth_configuration;
-                $authConfiguration['auth']['access_token']['token']       = $refreshData->accessToken;
-                $authConfiguration['auth']['access_token']['expired_in']  = now()->addSeconds($refreshData->expireIn);
-                $authConfiguration['auth']['refresh_token']['token']      = $refreshData->refreshToken;
-                $authConfiguration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
+                $authConfiguration = $this->getConfiguration($refreshData);
                 $this->shop->auth_configuration = $authConfiguration;
                 $this->shop->save();
             }
@@ -87,7 +84,7 @@ class ShopeeAdapter implements ShopAdapterContract
     public static function make(Shop $shop): self
     {
         if (! self::canCreate($shop)) {
-            throw new RuntimeException('Not a Shopee shop');
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, 'Not a Shopee shop');
         }
 
         $config = $shop->auth_configuration;
@@ -105,7 +102,13 @@ class ShopeeAdapter implements ShopAdapterContract
 
     public static function canCreate(Shop $shop): bool
     {
-        return $shop->shop_type === ShopsEnum::SHOPEE;
+        return $shop->shop_type === ShopsEnum::SHOPEE &&
+            config('services.shopee.partner_id') &&
+            config('services.shopee.partner_key') &&
+            config('services.shopee.base_url') &&
+            data_get($shop->auth_configuration, 'auth.access_token.token') &&
+            $shop->external_shop_id &&
+            data_get($shop->auth_configuration, 'auth.refresh_token.token');
     }
 
     public static function constructAuthorizationUrl(): string
@@ -115,11 +118,11 @@ class ShopeeAdapter implements ShopAdapterContract
         session(['shopee_oauth_state' => $state]);
 
         $queryParameters = http_build_query([
-            'partner_id'    => config('services.shopee.partner_id'),
-            'auth_type'     => config('services.shopee.auth_type'),
-            'redirect_uri'  => config('services.shopee.redirect_url'),
+            'partner_id' => config('services.shopee.partner_id'),
+            'auth_type' => config('services.shopee.auth_type'),
+            'redirect_uri' => config('services.shopee.redirect_url'),
             'response_type' => 'code',
-            'state'         => $state,
+            'state' => $state,
         ]);
 
         $baseUrl = rtrim(config('services.shopee.auth_base_url'), '/');
@@ -150,20 +153,20 @@ class ShopeeAdapter implements ShopAdapterContract
         $externalShopId = $data['shop_id'];
         $idType = 'shop_id';
 
-        if (!$externalShopId) {
+        if (! $externalShopId) {
             $externalShopId = $data['main_account_id'];
             $idType = 'main_account_id';
         }
 
         if (! self::validateState($state)) {
-            throw new RuntimeException('state is wrong');
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, 'state is wrong');
         }
 
-        $token = new ShopeeClient(
+        $token = (new ShopeeClient(
             partnerId: config('services.shopee.partner_id'),
             partnerKey: config('services.shopee.partner_key'),
             baseUrl: config('services.shopee.base_url'),
-        )
+        ))
             ->authorization()
             ->getAccessToken(
                 $data['code'],
@@ -176,11 +179,11 @@ class ShopeeAdapter implements ShopAdapterContract
         $authConfiguration = [
             'auth' => [
                 'access_token' => [
-                    'token'      => $token->accessToken,
+                    'token' => $token->accessToken,
                     'expired_in' => now()->addSeconds((int) $token->expireIn),
                 ],
                 'refresh_token' => [
-                    'token'      => $token->refreshToken,
+                    'token' => $token->refreshToken,
                     'expired_in' => now()->addDays(30),
                 ],
             ],
@@ -190,14 +193,13 @@ class ShopeeAdapter implements ShopAdapterContract
             ? ($token->shopIdList ?? [])
             : [$externalShopId];
 
-        return collect($externalShopIds)->map(fn($shopId) => new GetTokenResponseData(
+        return collect($externalShopIds)->map(fn ($shopId) => new GetTokenResponseData(
             externalShopId: (string) $shopId,
             shopType: ShopsEnum::SHOPEE,
             authConfiguration: $authConfiguration,
             isActive: true,
         ));
     }
-
 
     /**
      * Refresh the shop's tokens and return the updated `auth_configuration`
@@ -206,8 +208,8 @@ class ShopeeAdapter implements ShopAdapterContract
      *
      * @return array{
      *     auth: array{
-     *         access_token: array{token: string, expired_in: \Illuminate\Support\Carbon},
-     *         refresh_token: array{token: string, expired_in: \Illuminate\Support\Carbon}
+     *         access_token: array{token: string, expired_in: Carbon},
+     *         refresh_token: array{token: string, expired_in: Carbon}
      *     }
      * }
      */
@@ -218,21 +220,16 @@ class ShopeeAdapter implements ShopAdapterContract
             ->refreshAccessToken();
 
         if (! empty($token->error)) {
-            throw new RuntimeException(
-                'Shopee refresh access token request failed: ' . ($token->message ?: $token->error)
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE,
+                'Shopee refresh access token request failed: '.($token->message ?: $token->error)
             );
         }
 
         if (empty($token->expireIn)) {
-            throw new RuntimeException('Shopee refresh access token response missing expire_in');
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, 'Shopee refresh access token response missing expire_in');
         }
 
-        $authConfiguration = $this->shop->auth_configuration;
-
-        $authConfiguration['auth']['access_token']['token']       = $token->accessToken;
-        $authConfiguration['auth']['access_token']['expired_in']  = now()->addSeconds($token->expireIn);
-        $authConfiguration['auth']['refresh_token']['token']      = $token->refreshToken;
-        $authConfiguration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
+        $authConfiguration = $this->getConfiguration($token);
 
         return $authConfiguration;
     }
@@ -242,28 +239,28 @@ class ShopeeAdapter implements ShopAdapterContract
      * order DTOs. The integration layer returns Shopee's own DTOs; this service
      * is the seam that maps them into the application's language.
      *
-     * @return \Illuminate\Support\Collection<int, OrderResponse>
+     * @return Collection<int, OrderResponse>
      */
     public function getOrder(GetOrderRequestData $data): Collection
     {
         return $this->client
             ->order()
             ->getOrderDetail($data->ordersId ?? [])
-            ->map(fn(GetOrderDetailsData $order) => $this->toOrderResponse($order));
+            ->map(fn (GetOrderDetailsData $order) => $this->toOrderResponse($order));
     }
 
     /**
      * Fetch the parcels for the given order(s) and translate them into the app's
      * neutral package DTOs, flattened across every requested order.
      *
-     * @return \Illuminate\Support\Collection<int, PackageResponse>
+     * @return Collection<int, PackageResponse>
      */
     public function getOrderPackages(GetOrderRequestData $data): Collection
     {
         return $this->client
             ->order()
             ->getOrderDetail($data->ordersId ?? [])
-            ->flatMap(fn(GetOrderDetailsData $order) => $this->toPackageResponses($order));
+            ->flatMap(fn (GetOrderDetailsData $order) => $this->toPackageResponses($order));
     }
 
     /**
@@ -293,7 +290,7 @@ class ShopeeAdapter implements ShopAdapterContract
     private function toPackageResponses(GetOrderDetailsData $order): array
     {
         return collect($order->packageList ?? [])
-            ->map(fn(PackageData $package) => new PackageResponse(
+            ->map(fn (PackageData $package) => new PackageResponse(
                 externalPackageId: (string) $package->packageNumber,
                 externalOrderId: $order->orderSn,
                 shopType: ShopsEnum::SHOPEE,
@@ -319,7 +316,7 @@ class ShopeeAdapter implements ShopAdapterContract
         ];
 
         if (! in_array($package->external_package_status, $shippableStatuses, true)) {
-            throw new RuntimeException(
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE,
                 "Shopee shipping options unavailable for package status: {$package->external_package_status}"
             );
         }
@@ -348,7 +345,7 @@ class ShopeeAdapter implements ShopAdapterContract
                 method: ShippingMethodEnum::PICKUP,
                 requiredInputs: $this->mapRequiredInputs($info->pickup),
                 addresses: collect($params->pickup?->addressList ?? [])
-                    ->map(fn(ShippingAddressData $address) => new PickupAddressOption(
+                    ->map(fn (ShippingAddressData $address) => new PickupAddressOption(
                         id: (string) $address->addressId,
                         address: $address->address,
                         region: $address->region,
@@ -356,7 +353,7 @@ class ShopeeAdapter implements ShopAdapterContract
                         city: $address->city,
                         zipcode: $address->zipcode,
                         timeSlots: collect($address->timeSlotList ?? [])
-                            ->map(fn(ShippingTimeSlotData $slot) => new PickupTimeSlotOption(
+                            ->map(fn (ShippingTimeSlotData $slot) => new PickupTimeSlotOption(
                                 id: (string) $slot->pickupTimeId,
                                 date: $slot->date,
                                 label: $slot->timeText,
@@ -373,7 +370,7 @@ class ShopeeAdapter implements ShopAdapterContract
                 method: ShippingMethodEnum::DROPOFF,
                 requiredInputs: $this->mapRequiredInputs($info->dropoff),
                 branches: collect($params->dropoff?->branchList ?? [])
-                    ->map(fn(ShippingBranchData $branch) => new DropoffBranchOption(
+                    ->map(fn (ShippingBranchData $branch) => new DropoffBranchOption(
                         id: (string) $branch->branchId,
                         address: $branch->address,
                         region: $branch->region,
@@ -410,13 +407,13 @@ class ShopeeAdapter implements ShopAdapterContract
     private function mapRequiredInputs(array $fields): array
     {
         return collect($fields)
-            ->map(fn(string $field) => match ($field) {
-                'address_id'                       => ShippingInputEnum::PICKUP_ADDRESS,
-                'pickup_time_id'                   => ShippingInputEnum::PICKUP_TIME,
-                'branch_id'                        => ShippingInputEnum::DROPOFF_BRANCH,
-                'tracking_no', 'tracking_number'   => ShippingInputEnum::TRACKING_NUMBER,
-                'sender_real_name'                 => ShippingInputEnum::SENDER_NAME,
-                default                            => null,
+            ->map(fn (string $field) => match ($field) {
+                'address_id' => ShippingInputEnum::PICKUP_ADDRESS,
+                'pickup_time_id' => ShippingInputEnum::PICKUP_TIME,
+                'branch_id' => ShippingInputEnum::DROPOFF_BRANCH,
+                'tracking_no', 'tracking_number' => ShippingInputEnum::TRACKING_NUMBER,
+                'sender_real_name' => ShippingInputEnum::SENDER_NAME,
+                default => null,
             })
             ->filter()
             ->values()
@@ -479,11 +476,11 @@ class ShopeeAdapter implements ShopAdapterContract
         ])->first();
 
         if ($result === null) {
-            throw new RuntimeException('Shopee returned no shipping-document parameters for this package');
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, 'Shopee returned no shipping-document parameters for this package');
         }
 
         if ($result->failError) {
-            throw new RuntimeException("Shopee shipping-document parameter failed: {$result->failError} {$result->failMessage}");
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, "Shopee shipping-document parameter failed: {$result->failError} {$result->failMessage}");
         }
 
         return new DocumentTypeOptionsResponse(
@@ -509,7 +506,7 @@ class ShopeeAdapter implements ShopAdapterContract
         ])->first();
 
         if ($result?->failError) {
-            throw new RuntimeException("Shopee create-shipping-document failed: {$result->failError} {$result->failMessage}");
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE, "Shopee create-shipping-document failed: {$result->failError} {$result->failMessage}");
         }
 
         return $result !== null;
@@ -526,9 +523,9 @@ class ShopeeAdapter implements ShopAdapterContract
         ])->first();
 
         if ($result === null || $result->failError) {
-            throw new RuntimeException(
+            throw new ShopIntegrationException(ShopsEnum::SHOPEE,
                 'Shopee shipping-document result failed: '
-                . ($result->failError ?? 'no result returned') . ' ' . ($result->failMessage ?? '')
+                .($result->failError ?? 'no result returned').' '.($result->failMessage ?? '')
             );
         }
 
@@ -551,7 +548,21 @@ class ShopeeAdapter implements ShopAdapterContract
         return new DocumentFileData(
             content: $content,
             mimeType: 'application/pdf',
-            fileName: 'waybill-' . $package->external_package_id . '.pdf',
+            fileName: 'waybill-'.$package->external_package_id.'.pdf',
         );
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getConfiguration(RefreshAccessTokenData $refreshData): mixed
+    {
+        $authConfiguration = $this->shop->auth_configuration;
+        $authConfiguration['auth']['access_token']['token'] = $refreshData->accessToken;
+        $authConfiguration['auth']['access_token']['expired_in'] = now()->addSeconds($refreshData->expireIn);
+        $authConfiguration['auth']['refresh_token']['token'] = $refreshData->refreshToken;
+        $authConfiguration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
+
+        return $authConfiguration;
     }
 }

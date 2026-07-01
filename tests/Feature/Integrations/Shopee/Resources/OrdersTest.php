@@ -1,13 +1,14 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
+use App\Integrations\Shopee\Data\GetOrderDetailsData;
+use App\Integrations\Shopee\Data\GetOrderListData;
+use App\Integrations\Shopee\Data\GetShipmentListData;
+use App\Integrations\Shopee\Data\PackageDetailData;
+use App\Integrations\Shopee\Data\SearchPackageListData;
+use App\Integrations\Shopee\Data\SplitOrderData;
+use App\Integrations\Shopee\Data\SplitOrderItemData;
+use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
-use App\Integrations\Shopee\Resource;
-use App\Integrations\Shopee\Resources\Orders as OrdersResource;
-use Saloon\Http\Faking\MockClient;
-use Saloon\Http\Faking\MockResponse;
-use Illuminate\Support\Collection;
-
 use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Integrations\Shopee\Requests\Orders\GetOrderList;
 use App\Integrations\Shopee\Requests\Orders\GetPackageDetail;
@@ -15,15 +16,12 @@ use App\Integrations\Shopee\Requests\Orders\GetShipmentList;
 use App\Integrations\Shopee\Requests\Orders\SearchPackageList;
 use App\Integrations\Shopee\Requests\Orders\SplitOrder;
 use App\Integrations\Shopee\Requests\Orders\UnsplitOrder;
-
-use App\Integrations\Shopee\Data\GetOrderDetailsData;
-use App\Integrations\Shopee\Data\GetOrderListData;
-use App\Integrations\Shopee\Data\GetShipmentListData;
-use App\Integrations\Shopee\Data\SearchPackageListData;
-use App\Integrations\Shopee\Data\SplitOrderData;
-use App\Integrations\Shopee\Data\PackageDetailData;
-use App\Integrations\Shopee\Data\SplitOrderPackageData;
-use App\Integrations\Shopee\Data\SplitOrderItemData;
+use App\Integrations\Shopee\Resource;
+use App\Integrations\Shopee\Resources\Orders as OrdersResource;
+use App\Integrations\Shopee\ShopeeClient;
+use Illuminate\Support\Collection;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->shopeeAuthClient = new ShopeeClient(
@@ -56,13 +54,13 @@ describe('getOrderDetail', function () {
     it('returns a collection of GetOrderDetailsData on a valid response', function () {
         $orders = ($this->orders)(GetOrderDetail::class, [
             'response' => ['order_list' => [[
-                'order_sn'     => '2209ABC',
-                'region'       => 'SG',
-                'currency'     => 'SGD',
-                'cod'          => false,
+                'order_sn' => '2209ABC',
+                'region' => 'SG',
+                'currency' => 'SGD',
+                'cod' => false,
                 'order_status' => 'READY_TO_SHIP',
-                'create_time'  => 1660123127,
-                'update_time'  => 1660123127,
+                'create_time' => 1660123127,
+                'update_time' => 1660123127,
                 'days_to_ship' => 3,
                 'ship_by_date' => 1662209873,
             ]]],
@@ -95,7 +93,7 @@ describe('getOrderDetail', function () {
 
     it('throws ShopeeException when Shopee returns an error', function () {
         $orders = ($this->orders)(GetOrderDetail::class, [
-            'error'   => 'error_param',
+            'error' => 'error_param',
             'message' => 'order_sn not found',
         ]);
 
@@ -107,8 +105,8 @@ describe('getOrderList', function () {
     it('returns GetOrderListData on a valid response', function () {
         $orders = ($this->orders)(GetOrderList::class, [
             'response' => [
-                'order_list'  => [['order_sn' => '201ABC', 'order_status' => 'READY_TO_SHIP']],
-                'more'        => false,
+                'order_list' => [['order_sn' => '201ABC', 'order_status' => 'READY_TO_SHIP']],
+                'more' => false,
                 'next_cursor' => '',
             ],
         ]);
@@ -153,7 +151,7 @@ describe('splitOrder', function () {
     it('returns SplitOrderData on a valid response', function () use ($packageList) {
         $orders = ($this->orders)(SplitOrder::class, [
             'response' => [
-                'order_sn'     => '201ABC',
+                'order_sn' => '201ABC',
                 'package_list' => [['package_number' => 'OFG1']],
             ],
         ]);
@@ -196,8 +194,8 @@ describe('getShipmentList', function () {
     it('returns GetShipmentListData on a valid response', function () {
         $orders = ($this->orders)(GetShipmentList::class, [
             'response' => [
-                'order_list'  => [['order_sn' => '2003ABC', 'package_number' => '3801']],
-                'more'        => false,
+                'order_list' => [['order_sn' => '2003ABC', 'package_number' => '3801']],
+                'more' => false,
                 'next_cursor' => '',
             ],
         ]);
@@ -230,7 +228,7 @@ describe('searchPackageList', function () {
         $orders = ($this->orders)(SearchPackageList::class, [
             'response' => [
                 'packages_list' => [['order_sn' => '250ABC', 'package_number' => 'OFG9']],
-                'pagination'    => ['total_count' => 1, 'next_cursor' => '', 'more' => false],
+                'pagination' => ['total_count' => 1, 'next_cursor' => '', 'more' => false],
             ],
         ]);
 
@@ -261,8 +259,8 @@ describe('getPackageDetail', function () {
     it('returns a collection of PackageDetailData on a valid response', function () {
         $orders = ($this->orders)(GetPackageDetail::class, [
             'response' => ['package_list' => [[
-                'order_sn'           => '220ABC',
-                'package_number'     => 'OFG7',
+                'order_sn' => '220ABC',
+                'package_number' => 'OFG7',
                 'fulfillment_status' => 'LOGISTICS_READY',
             ]]],
         ]);

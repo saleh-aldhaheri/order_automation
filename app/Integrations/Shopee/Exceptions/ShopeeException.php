@@ -2,6 +2,7 @@
 
 namespace App\Integrations\Shopee\Exceptions;
 
+use App\Integrations\Shopee\ShopeeClient;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 use Throwable;
@@ -11,7 +12,7 @@ use Throwable;
  *
  * It extends Saloon's {@see RequestException} on purpose: that is the exception
  * type Saloon's send loop catches to drive retries, and the type
- * {@see \App\Integrations\Shopee\ShopeeClient::handleRetry()} acts on. If this
+ * {@see ShopeeClient::handleRetry()} acts on. If this
  * were a plain \Exception, a thrown ShopeeException would escape the retry catch
  * and the 401-refresh-retry flow would never run.
  *

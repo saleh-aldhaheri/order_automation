@@ -6,13 +6,13 @@ use App\Integrations\Shopee\Enums\ShopeePackageFulfillmentStatusEnum;
 
 enum PackageStatusEnum: string
 {
-    case PENDING   = 'pending';
-    case READY     = 'ready';
-    case SHIPPED   = 'shipped';
+    case PENDING = 'pending';
+    case READY = 'ready';
+    case SHIPPED = 'shipped';
     case DELIVERED = 'delivered';
-    case FAILED    = 'failed';
+    case FAILED = 'failed';
     case CANCELLED = 'cancelled';
-    case LOST      = 'lost';
+    case LOST = 'lost';
 
     /**
      * Map a Shopee logistics/fulfillment status string into the app's neutral
@@ -25,17 +25,17 @@ enum PackageStatusEnum: string
     public static function fromShopee(?string $shopeeStatus): self
     {
         return match ($shopeeStatus) {
-            ShopeePackageFulfillmentStatusEnum::LOGISTICS_READY            => self::READY,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_READY => self::READY,
             ShopeePackageFulfillmentStatusEnum::LOGISTICS_REQUEST_CREATED,
             ShopeePackageFulfillmentStatusEnum::LOGISTICS_PICKUP_DONE,
-            ShopeePackageFulfillmentStatusEnum::LOGISTICS_PICKUP_RETRY     => self::SHIPPED,
-            ShopeePackageFulfillmentStatusEnum::LOGISTICS_DELIVERY_DONE    => self::DELIVERED,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_PICKUP_RETRY => self::SHIPPED,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_DELIVERY_DONE => self::DELIVERED,
             ShopeePackageFulfillmentStatusEnum::LOGISTICS_PICKUP_FAILED,
-            ShopeePackageFulfillmentStatusEnum::LOGISTICS_DELIVERY_FAILED  => self::FAILED,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_DELIVERY_FAILED => self::FAILED,
             ShopeePackageFulfillmentStatusEnum::LOGISTICS_INVALID,
             ShopeePackageFulfillmentStatusEnum::LOGISTICS_REQUEST_CANCELED => self::CANCELLED,
-            ShopeePackageFulfillmentStatusEnum::LOGISTICS_LOST             => self::LOST,
-            default                                                        => self::PENDING,
+            ShopeePackageFulfillmentStatusEnum::LOGISTICS_LOST => self::LOST,
+            default => self::PENDING,
         };
     }
 }

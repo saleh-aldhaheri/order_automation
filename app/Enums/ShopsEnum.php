@@ -25,7 +25,7 @@ enum ShopsEnum: string
         return match ($this) {
             self::SHOPEE => ShopeeAdapter::class,
             // self::LAZADA => LazadaService::class,
-            default =>  throw new RuntimeException("shop is not supported")
+            default => throw new RuntimeException('shop is not supported')
         };
     }
 }

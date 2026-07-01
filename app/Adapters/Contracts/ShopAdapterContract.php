@@ -5,13 +5,14 @@ namespace App\Adapters\Contracts;
 use App\Data\Integrations\Requests\GetOrderRequestData;
 use App\Data\Integrations\Requests\HandleCallbackRequest;
 use App\Data\Integrations\Requests\ShipPackageRequestData;
+use App\Data\Integrations\Responses\DocumentFileData;
+use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
+use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Data\Integrations\Responses\OrderResponse;
 use App\Data\Integrations\Responses\PackageResponse;
-use App\Data\Integrations\Responses\GetTokenResponseData;
 use App\Data\Integrations\Responses\ShippingOptionsResponse;
-use App\Data\Integrations\Responses\DocumentTypeOptionsResponse;
-use App\Data\Integrations\Responses\DocumentFileData;
 use App\Enums\DocumentStatusEnum;
+use App\Enums\ShopsEnum;
 use App\Models\Package;
 use App\Models\Shop;
 use Illuminate\Support\Collection;
@@ -22,7 +23,7 @@ interface ShopAdapterContract
      * Factory for a shop-bound service instance.
      *
      * Required so the marketplace can be resolved generically via
-     * {@see \App\Enums\ShopsEnum::service()} as `$type->service()::make($shop)`.
+     * {@see ShopsEnum::service()} as `$type->service()::make($shop)`.
      */
     public static function make(Shop $shop): self;
 
@@ -44,14 +45,14 @@ interface ShopAdapterContract
     public function refreshAuthConfiguration(): array;
 
     /**
-     * @return \Illuminate\Support\Collection<int, OrderResponse>
+     * @return Collection<int, OrderResponse>
      */
     public function getOrder(GetOrderRequestData $data): Collection;
 
     /**
      * Fetch just the parcels for the given order(s), as neutral DTOs.
      *
-     * @return \Illuminate\Support\Collection<int, PackageResponse>
+     * @return Collection<int, PackageResponse>
      */
     public function getOrderPackages(GetOrderRequestData $data): Collection;
 

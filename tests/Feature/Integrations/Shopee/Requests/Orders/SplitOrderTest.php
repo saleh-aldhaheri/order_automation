@@ -1,16 +1,18 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Orders\SplitOrder;
-use App\Integrations\Shopee\Data\SplitOrderPackageData;
-use App\Integrations\Shopee\Data\SplitOrderItemData;
 use App\Integrations\Shopee\Data\SplitOrderData;
+use App\Integrations\Shopee\Data\SplitOrderItemData;
+use App\Integrations\Shopee\Data\SplitOrderPackageData;
 use App\Integrations\Shopee\Data\SplitOrderResultPackageData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Orders\SplitOrder;
+use App\Integrations\Shopee\ShopeeClient;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
     $this->accessToken = 'access-token';
     $this->shopId = 1;
@@ -44,8 +46,8 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the body from the order and its package list', function() {
+describe('request', function () {
+    it('builds the body from the order and its package list', function () {
         expect($this->request->body()->all())->toBe([
             'order_sn' => $this->orderSn,
             'package_list' => [
@@ -64,17 +66,16 @@ describe('request', function() {
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/order/split_order');
     });
 });
 
+describe('response', function () {
+    it('casts the full dto, including the optional fields, from the response', function () {
 
-describe('response', function() {
-    it('casts the full dto, including the optional fields, from the response', function() {
-
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            SplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            SplitOrder::class => MockResponse::make([
                 'request_id' => 'request-id',
                 'error' => '',
                 'message' => '',
@@ -95,7 +96,7 @@ describe('response', function() {
                         ],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -110,17 +111,17 @@ describe('response', function() {
             ->and($response->packageList[1]->packageNumber)->toBe('PKG-2');
     });
 
-    it('casts the dto when only the required fields are returned', function() {
+    it('casts the dto when only the required fields are returned', function () {
 
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            SplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            SplitOrder::class => MockResponse::make([
                 'response' => [
                     'order_sn' => $this->orderSn,
                     'package_list' => [
                         ['package_number' => 'PKG-1'],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -135,12 +136,12 @@ describe('response', function() {
     });
 
     it('throws a ShopeeException when Shopee returns an error', function () {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            SplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+        $requestMock = new MockClient([
+            SplitOrder::class => MockResponse::make([
                 'error' => 'logistics.error_split',
                 'message' => 'Order can not be split.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);
@@ -148,16 +149,16 @@ describe('response', function() {
         $this->shopeeClient->order()->splitOrder($this->orderSn, $this->packageList);
     })->throws(ShopeeException::class);
 
-    it('throws a ShopeeException when the casting fails', function() {
-        $requestMock  = new \Saloon\Http\Faking\MockClient([
-            SplitOrder::class =>  \Saloon\Http\Faking\MockResponse::make([
+    it('throws a ShopeeException when the casting fails', function () {
+        $requestMock = new MockClient([
+            SplitOrder::class => MockResponse::make([
                 'response' => [
                     // missing the required order_sn
                     'package_list' => [
                         ['package_number' => 'PKG-1'],
                     ],
                 ],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($requestMock);

@@ -1,7 +1,8 @@
 <?php
+
 use App\Integrations\Shopee\Enums\ShopeeEventsEnum;
 
-it('it has expected enums cases',function() {
+it('it has expected enums cases', function () {
     expect(count(ShopeeEventsEnum::cases()))->toBe(7)
         ->and(ShopeeEventsEnum::SHOP_AUTH->value)->toBe(1)
         ->and(ShopeeEventsEnum::AUTH_CANCELED->value)->toBe(2)

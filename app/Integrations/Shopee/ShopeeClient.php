@@ -3,25 +3,23 @@
 namespace App\Integrations\Shopee;
 
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Resources\Authorization;
+use App\Integrations\Shopee\Resources\Logistics;
+use App\Integrations\Shopee\Resources\Orders;
 use Closure;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Connector;
 use Saloon\Http\PendingRequest;
+use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
-use Saloon\Exceptions\Request\FatalRequestException;
-use Saloon\Http\Request;
-use Saloon\Exceptions\Request\RequestException;
-use App\Integrations\Shopee\Resources\{
-    Authorization,
-    Logistics,
-    Orders
-};
 use Throwable;
 
 class ShopeeClient extends Connector
 {
-    use HasTimeout, AlwaysThrowOnErrors;
+    use AlwaysThrowOnErrors, HasTimeout;
 
     public ?int $tries = 3;
 
@@ -34,20 +32,20 @@ class ShopeeClient extends Connector
     public ?bool $useExponentialBackoff = true;
 
     public function __construct(
-        public readonly int    $partnerId,
-        public readonly string    $partnerKey,
-        public readonly string    $baseUrl,
-        public ?string         $accessToken = null,
-        public readonly ?string   $shopId = null,      // shop_id | merchant_id
-        public ?string            $refreshToken = null,
-        private readonly ?Closure $persistRefreshedToken =  null,
+        public readonly int $partnerId,
+        public readonly string $partnerKey,
+        public readonly string $baseUrl,
+        public ?string $accessToken = null,
+        public readonly ?string $shopId = null,      // shop_id | merchant_id
+        public ?string $refreshToken = null,
+        private readonly ?Closure $persistRefreshedToken = null,
     ) {}
 
     protected function defaultHeaders(): array
     {
         return [
             'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
+            'Accept' => 'application/json',
         ];
     }
 
@@ -58,13 +56,13 @@ class ShopeeClient extends Connector
 
     public function sign(string $path, int $timestamp, bool $isPublic): string
     {
-        $base = $this->partnerId . $path . $timestamp;
+        $base = $this->partnerId.$path.$timestamp;
 
         if (! $isPublic) {
-            if (!$this->accessToken || !$this->shopId) {
-                throw new ShopeeException("access token or account id missing for a shop API call",401);
+            if (! $this->accessToken || ! $this->shopId) {
+                throw new ShopeeException('access token or account id missing for a shop API call', 401);
             }
-            $base .= $this->accessToken . $this->shopId;
+            $base .= $this->accessToken.$this->shopId;
         }
 
         return hash_hmac('sha256', $base, $this->partnerKey);
@@ -72,13 +70,13 @@ class ShopeeClient extends Connector
 
     public function boot(PendingRequest $pendingRequest): void
     {
-        $path      = parse_url($pendingRequest->getUrl(), PHP_URL_PATH);
+        $path = parse_url($pendingRequest->getUrl(), PHP_URL_PATH);
         $timestamp = time();
         $isPublic = $pendingRequest->getRequest()?->isPublic ?? false;
 
         $query = [
             'partner_id' => $this->partnerId,
-            'timestamp'  => $timestamp,
+            'timestamp' => $timestamp,
         ];
 
         if (! $isPublic && $this->accessToken) {
@@ -90,7 +88,7 @@ class ShopeeClient extends Connector
 
         $pendingRequest->middleware()->onFatalException(
             fn (FatalRequestException $e) => throw new ShopeeException(
-                'Could not reach Shopee: ' . $e->getMessage(),
+                'Could not reach Shopee: '.$e->getMessage(),
                 0,
                 $e,
             ),
@@ -115,7 +113,7 @@ class ShopeeClient extends Connector
     {
         $refreshData = $this->authorization()->refreshAccessToken();
 
-        $this->accessToken  = $refreshData->accessToken;
+        $this->accessToken = $refreshData->accessToken;
         $this->refreshToken = $refreshData->refreshToken;
 
         if ($this->persistRefreshedToken !== null) {

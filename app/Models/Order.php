@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    use SearchableTrait, HasFactory;
+    use HasFactory, SearchableTrait;
 
     protected $searchable = [
         'external_order_id',
@@ -21,7 +21,7 @@ class Order extends Model
         'shop_id',
         'shop_type',
         'external_order_status',
-        'order_status'
+        'order_status',
     ];
 
     protected $fillable = [
@@ -31,13 +31,13 @@ class Order extends Model
         'shop_type',
         'external_order_status',
         'order_status',
-        'details'
+        'details',
     ];
 
     public $casts = [
         'details' => 'array',
         'order_status' => OrderStatusEnum::class,
-        'shop_type' =>  ShopsEnum::class
+        'shop_type' => ShopsEnum::class,
     ];
 
     public function scopeGetOrder(Builder $query, string $externalOrderId, int $shopId)

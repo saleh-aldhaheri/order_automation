@@ -14,6 +14,7 @@ class RefreshAccessToken extends ShopeeRequest implements HasBody
     use HasJsonBody;
 
     protected Method $method = Method::POST;
+
     public bool $isPublic = true;
 
     public function __construct(
@@ -31,8 +32,8 @@ class RefreshAccessToken extends ShopeeRequest implements HasBody
     {
         return [
             'refresh_token' => $this->refreshToken,
-            'partner_id'    => $this->partnerId,
-            'shop_id'       => $this->shopId,
+            'partner_id' => $this->partnerId,
+            'shop_id' => $this->shopId,
         ];
     }
 

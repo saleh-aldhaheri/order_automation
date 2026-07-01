@@ -1,11 +1,11 @@
 <?php
 
-use App\Integrations\Shopee\ShopeeClient;
-use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
-use App\Integrations\Shopee\Data\ShipOrderPickupData;
 use App\Integrations\Shopee\Data\ShipOrderDropoffData;
 use App\Integrations\Shopee\Data\ShipOrderNonIntegratedData;
+use App\Integrations\Shopee\Data\ShipOrderPickupData;
 use App\Integrations\Shopee\Exceptions\ShopeeException;
+use App\Integrations\Shopee\Requests\Logistics\ShipOrder;
+use App\Integrations\Shopee\ShopeeClient;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -38,8 +38,8 @@ beforeEach(function () {
     );
 });
 
-describe('request', function() {
-    it('builds the body with the package number and pickup method, stripping null fields', function() {
+describe('request', function () {
+    it('builds the body with the package number and pickup method, stripping null fields', function () {
         expect($this->request->body()->all())->toBe([
             'order_sn' => $this->orderSn,
             'package_number' => $this->packageNumber,
@@ -50,10 +50,10 @@ describe('request', function() {
         ]);
     });
 
-    it('includes the chosen method as an empty object when it has no fields', function() {
+    it('includes the chosen method as an empty object when it has no fields', function () {
         $request = new ShipOrder(
             orderSn: $this->orderSn,
-            dropoff: new ShipOrderDropoffData(),
+            dropoff: new ShipOrderDropoffData,
         );
 
         $body = $request->body()->all();
@@ -64,7 +64,7 @@ describe('request', function() {
             ->and($body)->not->toHaveKey('pickup');
     });
 
-    it('builds the body for the non integrated method', function() {
+    it('builds the body for the non integrated method', function () {
         $request = new ShipOrder(
             orderSn: $this->orderSn,
             nonIntegrated: new ShipOrderNonIntegratedData(trackingNumber: 'TRK-123'),
@@ -78,21 +78,20 @@ describe('request', function() {
         ]);
     });
 
-    it('uses the correct endpoint for the request', function() {
+    it('uses the correct endpoint for the request', function () {
         expect($this->request->resolveEndpoint())->toBe('/api/v2/logistics/ship_order');
     });
 });
 
-
-describe('response', function() {
-    it('returns true when Shopee arranges the shipment', function() {
+describe('response', function () {
+    it('returns true when Shopee arranges the shipment', function () {
         $mockRequest = new MockClient([
             ShipOrder::class => MockResponse::make([
                 'request_id' => 'request-id',
                 'error' => '',
                 'message' => '',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);
@@ -111,7 +110,7 @@ describe('response', function() {
                 'error' => 'logistics.error_status',
                 'message' => 'Order can not be shipped.',
                 'response' => [],
-            ])
+            ]),
         ], 200);
 
         $this->shopeeClient->withMockClient($mockRequest);

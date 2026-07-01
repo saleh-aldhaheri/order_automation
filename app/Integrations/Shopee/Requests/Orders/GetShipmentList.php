@@ -28,13 +28,13 @@ class GetShipmentList extends ShopeeRequest
 
     public function resolveEndpoint(): string
     {
-        return "/api/v2/order/get_shipment_list";
+        return '/api/v2/order/get_shipment_list';
     }
 
     public function defaultQuery(): array
     {
         $query = [
-            'page_size' =>  $this->pageSize
+            'page_size' => $this->pageSize,
         ];
 
         if ($this->cursor) {

@@ -3,6 +3,7 @@
 namespace App\Data\Integrations\Responses;
 
 use App\Enums\ShopsEnum;
+use App\Services\PackageService;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -10,7 +11,7 @@ use Spatie\LaravelData\Data;
  * Vendor-neutral shipping options for a single package.
  *
  * Each marketplace translates its own "shipping parameter" payload into this
- * shape in its service, so callers ({@see \App\Services\PackageService}) and the
+ * shape in its service, so callers ({@see PackageService}) and the
  * frontend never see marketplace-specific structures. `methods` holds every
  * fulfilment method the package supports — the seller picks one, then provides
  * that method's required inputs, which round-trip into a ship request.

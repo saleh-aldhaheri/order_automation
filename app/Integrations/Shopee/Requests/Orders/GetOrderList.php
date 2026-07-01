@@ -11,7 +11,6 @@ use Saloon\Http\Response;
 
 class GetOrderList extends ShopeeRequest
 {
-
     public Method $method = Method::GET;
 
     public function __construct(
@@ -21,9 +20,9 @@ class GetOrderList extends ShopeeRequest
         public readonly int $pageSize = 50,
         public readonly ?string $cursor = null,
         public readonly ?ShopeeOrderStatusEnum $orderStatus = null,
-        public readonly ?string $responseOptionalFields =  null,
+        public readonly ?string $responseOptionalFields = null,
         public readonly ?bool $requestOrderStatusPending = null,
-        public readonly ?int $logisticsChannelId =  null,
+        public readonly ?int $logisticsChannelId = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -33,14 +32,14 @@ class GetOrderList extends ShopeeRequest
 
     public function defaultQuery(): array
     {
-        $query  = [
+        $query = [
             'time_range_field' => $this->timeRangeField,
             'time_from' => $this->timeFrom,
             'time_to' => $this->timeTo,
             'page_size' => $this->pageSize,
         ];
 
-        if($this->cursor) {
+        if ($this->cursor) {
             $query['cursor'] = $this->cursor;
         }
 

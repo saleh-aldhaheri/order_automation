@@ -18,7 +18,7 @@ class GetPackageDetail extends ShopeeRequest
 
     /**
      * @param  array<int, string>  $packageNumberList
-     *     Set of package_number values, comma-joined for the API. Limit [1,50].
+     *                                                 Set of package_number values, comma-joined for the API. Limit [1,50].
      */
     public function __construct(
         public readonly array $packageNumberList,
@@ -39,7 +39,7 @@ class GetPackageDetail extends ShopeeRequest
     /**
      * Inbound boundary: Shopee `response.package_list` -> faithful vendor DTOs.
      *
-     * @return \Illuminate\Support\Collection<int, PackageDetailData>
+     * @return Collection<int, PackageDetailData>
      */
     public function toDto(Response $response): Collection
     {

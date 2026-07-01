@@ -1,18 +1,20 @@
 <?php
 
 use App\Integrations\Shopee\Exceptions\ShopeeException;
-use App\Integrations\Shopee\Resources\Authorization;
-use App\Integrations\Shopee\ShopeeClient;
 use App\Integrations\Shopee\Requests\Authorization\GetAccessToken;
-use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
 use App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken;
-use Saloon\Http\Faking\MockClient;
-use Saloon\Http\Faking\MockResponse;
-use Saloon\Exceptions\Request\RequestException;
-use Saloon\Http\Request;
-use Saloon\Http\Response;
+use App\Integrations\Shopee\Requests\Orders\GetOrderDetail;
+use App\Integrations\Shopee\Resources\Authorization;
 use App\Integrations\Shopee\Resources\Logistics;
 use App\Integrations\Shopee\Resources\Orders as OrdersResource;
+use App\Integrations\Shopee\ShopeeClient;
+use App\Models\Shop;
+use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Exceptions\Request\RequestException;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 /**
  * Send a request through the connector and return the raw failed Response.
@@ -34,13 +36,13 @@ function fakeFailedResponse(ShopeeClient $client, Request $request, int $status)
     }
 }
 
-beforeEach(function() {
+beforeEach(function () {
     $this->partnerKey = config('services.shopee.partner_key');
-    $this->partnerId =  config('services.shopee.partner_id');
+    $this->partnerId = config('services.shopee.partner_id');
     $this->baseUrl = config('services.shopee.base_url');
-    $this->accessToken = "fake";
-    $this->shopId = "fake";
-    $this->refreshToken  = "fake";
+    $this->accessToken = 'fake';
+    $this->shopId = 'fake';
+    $this->refreshToken = 'fake';
 
     $this->shopeeClient = new ShopeeClient(
         $this->partnerId,
@@ -58,18 +60,18 @@ beforeEach(function() {
     );
 
     $this->publicRquest = new GetAccessToken(
-        "code",
+        'code',
         $this->partnerId,
         $this->shopId,
-        "shop_id"
+        'shop_id'
     );
 
     $this->privateRequest = new GetOrderDetail(
-        ["order_id"]
+        ['order_id']
     );
 });
 
-describe('create client', function() {
+describe('create client', function () {
 
     it('create shopee client instance', function () {
 
@@ -101,16 +103,16 @@ describe('create client', function() {
     ]);
 });
 
-describe('sign', function() {
+describe('sign', function () {
 
     it('sign non public request correctly', function (string $accessToken, string $shopId, string $refreshToken, Closure $fn) {
 
-        $path =  $this->baseUrl.'\test';
+        $path = $this->baseUrl.'\test';
         $timestamp = time();
 
-        $base = $this->partnerId . $path . $timestamp . $this->accessToken .$this->shopId;
+        $base = $this->partnerId.$path.$timestamp.$this->accessToken.$this->shopId;
 
-        $hash =  hash_hmac('sha256', $base, $this->partnerKey);
+        $hash = hash_hmac('sha256', $base, $this->partnerKey);
 
         $clientHash = $this->shopeeAuthClient->sign($path, $timestamp, false);
 
@@ -120,36 +122,36 @@ describe('sign', function() {
         ['1', '2', '4', fn () => null],
     ]);
 
-    it('should sign non public request correctly', function() {
+    it('should sign non public request correctly', function () {
 
-        $path =  $this->baseUrl.'\test';
+        $path = $this->baseUrl.'\test';
         $timestamp = time();
 
-        $base = $this->partnerId . $path . $timestamp;
+        $base = $this->partnerId.$path.$timestamp;
 
-        $hash =  hash_hmac('sha256', $base, $this->partnerKey);
+        $hash = hash_hmac('sha256', $base, $this->partnerKey);
         $clientHash = $this->shopeeClient->sign($path, $timestamp, true);
 
         expect($hash)->toBe($clientHash);
     });
 
-    it('should throw shopee exception when fields missing for signing private key', function() {
+    it('should throw shopee exception when fields missing for signing private key', function () {
 
-        $path =  $this->baseUrl.'\test';
+        $path = $this->baseUrl.'\test';
         $timestamp = time();
 
         $this->shopeeClient->sign($path, $timestamp, false);
 
-    })->throws(ShopeeException::class, "access token or account id missing for a shop API call");
+    })->throws(ShopeeException::class, 'access token or account id missing for a shop API call');
 
 });
 
-describe('boot', function() {
+describe('boot', function () {
 
-    it('make sign the key and prepare query Parameter and payload correctly for private requests' , function() {
+    it('make sign the key and prepare query Parameter and payload correctly for private requests', function () {
         $pending = $this->shopeeAuthClient->createPendingRequest($this->privateRequest);
         $query = $pending->query()->all();
-        //the used request does not have payload GetOrderDetails Request
+        // the used request does not have payload GetOrderDetails Request
 
         expect($query)->toHaveKeys([
             'partner_id',
@@ -157,22 +159,22 @@ describe('boot', function() {
             'sign',
             'order_sn_list',
             'request_order_status_pending',
-            'response_optional_filed'
+            'response_optional_filed',
         ]);
     });
 
-   it('make sign the key and prepare query Parameter and payload correctly for public requests',function() {
+    it('make sign the key and prepare query Parameter and payload correctly for public requests', function () {
 
         $pending = $this->shopeeClient->createPendingRequest($this->publicRquest);
 
         $query = $pending->query()->all();
         $payload = $pending->body()->all();
 
-       expect($query)->toHaveKeys(['partner_id', 'timestamp', 'sign'])
-           ->and($payload)->toHaveKeys(['partner_id', 'code', 'shop_id']);
-   });
+        expect($query)->toHaveKeys(['partner_id', 'timestamp', 'sign'])
+            ->and($payload)->toHaveKeys(['partner_id', 'code', 'shop_id']);
+    });
 
-    it('throw shopee exception when not enable to make request',function() {
+    it('throw shopee exception when not enable to make request', function () {
 
         $client = new ShopeeClient(
             $this->partnerId,
@@ -185,17 +187,17 @@ describe('boot', function() {
     })->throws(ShopeeException::class);
 });
 
-describe('refresh token', function() {
-    it('throw shopee exception when the class refresh token not exist', function() {
+describe('refresh token', function () {
+    it('throw shopee exception when the class refresh token not exist', function () {
         $newAccessToken = 'new-access-token';
         $newRefreshToken = 'new-refresh-token';
 
-        $mockRequest = new \Saloon\Http\Faking\MockClient([
-            \App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken::class =>  \Saloon\Http\Faking\MockResponse::make([
-                'access_token'  => $newAccessToken,
+        $mockRequest = new MockClient([
+            RefreshAccessToken::class => MockResponse::make([
+                'access_token' => $newAccessToken,
                 'refresh_token' => $newRefreshToken,
                 'expire_in' => 3600,
-            ])
+            ]),
         ], 200);
 
         expect($this->shopeeAuthClient->accessToken)->toBe($this->accessToken)
@@ -208,64 +210,64 @@ describe('refresh token', function() {
             ->and($this->shopeeAuthClient->refreshToken)->toBe($newRefreshToken);
     });
 
-    it('should be able to persist the data using the closer', function() {
+    it('should be able to persist the data using the closer', function () {
         $newAccessToken = 'new-access-token';
         $newRefreshToken = 'new-refresh-token';
 
-        $mockRequest = new \Saloon\Http\Faking\MockClient([
-            \App\Integrations\Shopee\Requests\Authorization\RefreshAccessToken::class =>  \Saloon\Http\Faking\MockResponse::make([
-                'access_token'  => $newAccessToken,
+        $mockRequest = new MockClient([
+            RefreshAccessToken::class => MockResponse::make([
+                'access_token' => $newAccessToken,
                 'refresh_token' => $newRefreshToken,
                 'expire_in' => 3600,
-            ])
+            ]),
         ], 200);
 
-       $shop =  \App\Models\Shop::factory()->create();
-       $oldAccessToken = data_get($shop->auth_configuration, 'auth.access_token.token');
-       $oldRefreshToken = data_get($shop->auth_configuration, 'auth.refresh_token.token');
-       $expiredRefresh  = data_get($shop->auth_configuration, 'auth.refresh_token.expired_in');
-       $expiredAccess = data_get($shop->auth_configuration, 'auth.access_token.expired_in');
+        $shop = Shop::factory()->create();
+        $oldAccessToken = data_get($shop->auth_configuration, 'auth.access_token.token');
+        $oldRefreshToken = data_get($shop->auth_configuration, 'auth.refresh_token.token');
+        $expiredRefresh = data_get($shop->auth_configuration, 'auth.refresh_token.expired_in');
+        $expiredAccess = data_get($shop->auth_configuration, 'auth.access_token.expired_in');
 
-       $client = new ShopeeClient(
+        $client = new ShopeeClient(
             partnerId: config('services.shopee.partner_id'),
             partnerKey: config('services.shopee.partner_key'),
             baseUrl: config('services.shopee.base_url'),
             accessToken: $oldAccessToken,
             shopId: $shop->external_shop_id,
             refreshToken: $oldRefreshToken,
-            persistRefreshedToken: function($refreshData) use($shop) {
+            persistRefreshedToken: function ($refreshData) use ($shop) {
                 $authConfiguration = $shop->auth_configuration;
-                $authConfiguration['auth']['access_token']['token']       = $refreshData->accessToken;
-                $authConfiguration['auth']['access_token']['expired_in']  = now()->addSeconds($refreshData->expireIn);
-                $authConfiguration['auth']['refresh_token']['token']      = $refreshData->refreshToken;
+                $authConfiguration['auth']['access_token']['token'] = $refreshData->accessToken;
+                $authConfiguration['auth']['access_token']['expired_in'] = now()->addSeconds($refreshData->expireIn);
+                $authConfiguration['auth']['refresh_token']['token'] = $refreshData->refreshToken;
                 $authConfiguration['auth']['refresh_token']['expired_in'] = now()->addDays(30);
                 $shop->auth_configuration = $authConfiguration;
                 $shop->save();
             }
         );
 
-       $client->withMockClient($mockRequest);
-       $client->refresh();
+        $client->withMockClient($mockRequest);
+        $client->refresh();
 
-       $shop->refresh();
+        $shop->refresh();
 
-       expect(data_get($shop->auth_configuration, 'auth.access_token.token'))->toBe($newAccessToken)
-        ->and(data_get($shop->auth_configuration, 'auth.refresh_token.token'))->toBe($newRefreshToken)
-       ->and(data_get($shop->auth_configuration, 'auth.access_token.expired_in'))->not->toBe($expiredAccess)
-       ->and(data_get($shop->auth_configuration, 'auth.refresh_token.expired_in'))->not()->toBe($expiredRefresh);
+        expect(data_get($shop->auth_configuration, 'auth.access_token.token'))->toBe($newAccessToken)
+            ->and(data_get($shop->auth_configuration, 'auth.refresh_token.token'))->toBe($newRefreshToken)
+            ->and(data_get($shop->auth_configuration, 'auth.access_token.expired_in'))->not->toBe($expiredAccess)
+            ->and(data_get($shop->auth_configuration, 'auth.refresh_token.expired_in'))->not()->toBe($expiredRefresh);
     });
 });
 
-describe('retry', function() {
+describe('retry', function () {
     it('retries the request up to the connector limit (3) then gives up on repeated 401s', function () {
         $mock = new MockClient([
 
-            GetOrderDetail::class     => MockResponse::make(['error' => 'invalid_access_token'], 401),
+            GetOrderDetail::class => MockResponse::make(['error' => 'invalid_access_token'], 401),
 
             RefreshAccessToken::class => MockResponse::make([
-                'access_token'  => 'fresh-access',
+                'access_token' => 'fresh-access',
                 'refresh_token' => 'fresh-refresh',
-                'expire_in'     => 3600, // was `expire_In` — wrong key, never mapped to expireIn
+                'expire_in' => 3600, // was `expire_In` — wrong key, never mapped to expireIn
             ], 200),
         ]);
 
@@ -280,14 +282,14 @@ describe('retry', function() {
     });
 
     it('returns true and triggers refresh on 401 with refresh token', function () {
-        $request   = new GetOrderDetail(['id']);
+        $request = new GetOrderDetail(['id']);
         $exception = fakeFailedResponse($this->shopeeAuthClient, $request, 401)->toException();
 
         $this->shopeeAuthClient->withMockClient(new MockClient([
             RefreshAccessToken::class => MockResponse::make([
-                'access_token'  => 'new-token',
+                'access_token' => 'new-token',
                 'refresh_token' => 'new-refresh',
-                'expire_in'     => 3600,
+                'expire_in' => 3600,
             ], 200),
         ]));
 
@@ -299,9 +301,8 @@ describe('retry', function() {
     });
 
     it('should not retry if the request not from type not authorized', function (int $status) {
-        $request   = new GetOrderDetail(['id']);
+        $request = new GetOrderDetail(['id']);
         $exception = fakeFailedResponse($this->shopeeAuthClient, $request, $status)->toException();
-
 
         $result = $this->shopeeAuthClient->handleRetry($exception, $request);
 
@@ -319,18 +320,18 @@ describe('retry', function() {
             refreshToken: null, // nothing to refresh with
         );
 
-        $request   = new GetOrderDetail(['id']);
+        $request = new GetOrderDetail(['id']);
         $exception = fakeFailedResponse($client, $request, 401)->toException();
 
         expect($client->handleRetry($exception, $request))->toBeFalse();
     });
 
     it('should not retry on a fatal (connection) error', function () {
-        $request   = new GetOrderDetail(['id']);
+        $request = new GetOrderDetail(['id']);
         // FatalRequestException carries no HTTP response, so the 401 guard never
         // matches and handleRetry must bail out without attempting a refresh.
-        $exception = new \Saloon\Exceptions\Request\FatalRequestException(
-            new \Exception('Connection refused'),
+        $exception = new FatalRequestException(
+            new Exception('Connection refused'),
             $this->shopeeAuthClient->createPendingRequest($request),
         );
 
@@ -338,23 +339,23 @@ describe('retry', function() {
     });
 });
 
-describe('resource functions', function() {
-    it('return correct resource type', function() {
+describe('resource functions', function () {
+    it('return correct resource type', function () {
         expect($this->shopeeAuthClient->authorization())->toBeInstanceOf(Authorization::class)
             ->and($this->shopeeAuthClient->order())->toBeInstanceOf(OrdersResource::class)
             ->and($this->shopeeAuthClient->logistic())->toBeInstanceOf(Logistics::class);
     });
 });
 
-it('throw Shopee Exception when http request fail',  function() {
-     $mockRequest =  new MockClient([
-         GetOrderDetail::class => MockResponse::make([
-             'message' => 'server side error',
-         ],500)
-     ]) ;
+it('throw Shopee Exception when http request fail', function () {
+    $mockRequest = new MockClient([
+        GetOrderDetail::class => MockResponse::make([
+            'message' => 'server side error',
+        ], 500),
+    ]);
 
-     $this->shopeeAuthClient->withMockClient($mockRequest);
+    $this->shopeeAuthClient->withMockClient($mockRequest);
 
-     $this->shopeeAuthClient->order()->getOrderDetail(['id']);
+    $this->shopeeAuthClient->order()->getOrderDetail(['id']);
 
 })->throws(ShopeeException::class);

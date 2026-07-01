@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shop_id')->constrained();
             $table->string('external_order_id');
-            $table->string('external_shop_id'); //denormalization for faster query with webhooks
+            $table->string('external_shop_id'); // denormalization for faster query with webhooks
             $table->string('shop_type');
             $table->string('external_order_status');
             $table->string('order_status')
