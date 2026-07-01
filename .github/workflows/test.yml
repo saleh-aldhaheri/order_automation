@@ -1,8 +1,0 @@
-name: testing
-
-on: 
-  push: 
-    branches:
-      - ShopeeIntegration
-      - main
-      - dev

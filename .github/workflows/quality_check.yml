@@ -1,0 +1,43 @@
+name: Quality Check
+
+on: 
+  push: 
+    branches:
+      - ShopeeIntegration
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:      
+
+jobs:
+  test_application:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout Repository Code
+          uses: actions/checkout@v4
+
+        - name: Copy Env 
+          run:  cp  .example.env .env 
+
+        - name: Run Container
+          run:  docker compose -f docker-compose.test.yml up -d
+          env:
+            DB_CONNECTION: ${{ secrets.QA_DB_CONNECTION }}
+            DB_HOST: ${{ secrets.QA_DB_HOST }}
+            DB_PORT: ${{ secrets.QA_DB_PORT }}
+            DB_DATABASE: ${{ secrets.QA_DB_DATABASE }}
+            DB_USERNAME_ROOT: ${{ secrets.QA_DB_USERNAME_ROOT }}
+            DB_PASSWORD_ROOT: ${{ secrets.QA_DB_PASSWORD_ROOT }}
+         
+        - name: Generate App Key
+          run:  docker exec test_app php artisan key:generate
+
+        - name: Install Dev Dependencies
+          run: docker exec test_app composer install
+
+        - name: Run Test with Coverage
+          run: docker exec test_app php artisan test --coverage --parallel
+        
+  
+    
